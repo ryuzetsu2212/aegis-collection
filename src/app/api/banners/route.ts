@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb()
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO banners (title, subtitle, image_url, link_url, position)
       VALUES (?, ?, ?, ?, ?)
     `).run(

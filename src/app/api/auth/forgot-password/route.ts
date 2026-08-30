@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
     // Save to otp_codes table
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO otp_codes (email, code, expires_at)
       VALUES (?, ?, ?)
       ON CONFLICT(email) DO UPDATE SET

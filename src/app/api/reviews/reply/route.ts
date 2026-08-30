@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb()
-    db.prepare(`
+    await db.prepare(`
       UPDATE reviews
       SET admin_reply = ?, replied_at = CURRENT_TIMESTAMP
       WHERE id = ?

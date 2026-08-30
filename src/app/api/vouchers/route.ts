@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb()
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO vouchers (code, voucher_type, discount_type, discount_value, min_purchase, usage_limit, expires_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(
@@ -72,7 +72,7 @@ export async function PUT(request: Request) {
       if (!code || discount_value === undefined) {
         return NextResponse.json({ error: 'Kode voucher dan Nilai diskon wajib diisi' }, { status: 400 })
       }
-      db.prepare(`
+      await db.prepare(`
         UPDATE vouchers
         SET code = ?, voucher_type = ?, discount_type = ?, discount_value = ?, min_purchase = ?, usage_limit = ?, expires_at = ?
         WHERE id = ?

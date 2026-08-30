@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (existing) {
-      db.prepare(`
+      await db.prepare(`
         UPDATE reviews
         SET rating = ?, comment = ?, created_at = CURRENT_TIMESTAMP
         WHERE id = ?
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ id: existing.id, message: 'Ulasan berhasil diperbarui.' }, { status: 200 })
     }
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO reviews (product_id, user_id, order_id, rating, comment)
       VALUES (?, ?, ?, ?, ?)
     `).run(productId, user.id, orderId || null, rating, comment || null)

@@ -86,7 +86,7 @@ export async function PUT(
     }
 
     // Update products table
-    db.prepare(`
+    await db.prepare(`
       UPDATE products 
       SET category_id = ?, title = ?, slug = ?, description = ?, price = ?, image_url = ?, is_active = ?
       WHERE id = ?

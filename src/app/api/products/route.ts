@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO products (category_id, title, slug, description, price, image_url, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(
@@ -166,15 +166,13 @@ export async function POST(request: NextRequest) {
       is_active !== undefined ? (is_active ? 1 : 0) : 1
     )
 
-    const productId = result.lastInsertRowid as number
-
-    const insertVariant = db.prepare(`
-      INSERT INTO product_variants (product_id, size, color, stock)
-      VALUES (?, ?, ?, ?)
-    `)
+    const productId = Number(result.lastInsertRowid)
 
     for (const v of variants) {
-      await insertVariant.run(productId, v.size || null, v.color, Number(v.stock) || 0)
+      await db.prepare(`
+        INSERT INTO product_variants (product_id, size, color, stock)
+        VALUES (?, ?, ?, ?)
+      `).run(productId, v.size || null, v.color, Number(v.stock) || 0)
     }
 
     return NextResponse.json({
