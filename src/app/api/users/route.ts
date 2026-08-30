@@ -7,12 +7,13 @@ export async function GET() {
     await requireRole(['admin', 'staff'])
 
     const db = await getDb()
-    const rows = db.prepare(`
+    const rawRows = (await db.prepare(`
       SELECT id, email, full_name, role, created_at
       FROM users
       ORDER BY created_at DESC
-    `).all()
+    `).all()) as any[]
 
+    const rows = Array.isArray(rawRows) ? rawRows : []
     return NextResponse.json(rows)
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {

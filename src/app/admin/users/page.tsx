@@ -48,7 +48,8 @@ export default function AdminUsersPage() {
       const res = await fetch('/api/users')
       if (!res.ok) throw new Error('Gagal memuat daftar pengguna.')
       const data = await res.json()
-      setUsers(data || [])
+      const list = Array.isArray(data) ? data : Array.isArray(data?.users) ? data.users : []
+      setUsers(list)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Gagal memuat pengguna.')
     } finally {

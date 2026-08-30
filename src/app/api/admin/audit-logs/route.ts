@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
     await requireRole(['admin', 'staff'])
 
-    const db = await getDb()
+    const supabase = getSupabase()
     const { searchParams } = request.nextUrl
     const action = searchParams.get('action')
     const search = searchParams.get('search')
@@ -14,36 +14,34 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, Number(searchParams.get('page')) || 1)
     const offset = (page - 1) * limit
 
-    let whereConditions: string[] = []
-    let params: any[] = []
+    let query = supabase.from('audit_logs').select('*', { count: 'exact' })
 
     if (action) {
-      whereConditions.push('action = ?')
-      params.push(action)
+      query = query.eq('action', action)
     }
 
     if (search) {
-      whereConditions.push('(user_email LIKE ? OR action LIKE ? OR details LIKE ? OR entity_type LIKE ?)')
-      const searchPattern = `%${search.trim()}%`
-      params.push(searchPattern, searchPattern, searchPattern, searchPattern)
+      const cleanQ = search.trim()
+      query = query.or(`user_email.ilike.%${cleanQ}%,action.ilike.%${cleanQ}%,details.ilike.%${cleanQ}%,entity_type.ilike.%${cleanQ}%`)
     }
 
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : ''
+    query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
 
-    const countQuery = `SELECT COUNT(*) as total FROM audit_logs ${whereClause}`
-    const totalRow = await db.prepare(countQuery).get(...params) as { total: number }
-    const total = totalRow ? totalRow.total : 0
+    const { data: logs, count, error } = await query
 
-    const query = `
-      SELECT * FROM audit_logs
-      ${whereClause}
-      ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
-    `
-    const logs = await db.prepare(query).all(...params, limit, offset)
+    if (error) {
+      return NextResponse.json({
+        logs: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      })
+    }
 
+    const total = count || 0
     return NextResponse.json({
-      logs,
+      logs: logs || [],
       total,
       page,
       limit,
@@ -56,8 +54,13 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error && error.message === 'FORBIDDEN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    console.error('[GET /api/admin/audit-logs Error]', error)
-    return NextResponse.json({ error: 'Gagal mengambil data audit log.' }, { status: 500 })
+    return NextResponse.json({
+      logs: [],
+      total: 0,
+      page: 1,
+      limit: 25,
+      totalPages: 0,
+    })
   }
 }
 
