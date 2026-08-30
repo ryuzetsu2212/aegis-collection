@@ -65,9 +65,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Staff routes require staff or admin role
+  // Staff routes require staff, admin, or courier role
   if (STAFF_PATHS.some(path => pathname.startsWith(path))) {
-    if (userRole !== 'staff' && userRole !== 'admin') {
+    if (userRole !== 'staff' && userRole !== 'admin' && userRole !== 'courier') {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       return NextResponse.redirect(url)

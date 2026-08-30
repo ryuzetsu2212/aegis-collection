@@ -196,9 +196,9 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                     <span>Pengiriman Kurir</span>
                   </Link>
                   <Link
-                    href="/chat"
+                    href="/staff/chat"
                     className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                      isActive('/chat')
+                      isActive('/staff/chat')
                         ? 'text-blue-600 font-bold border-b-2 border-blue-600 pb-0.5'
                         : 'text-zinc-600 hover:text-blue-600'
                     }`}
@@ -281,7 +281,7 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                       {isCourier && (
                         <>
                           <Link
-                            href="/chat"
+                            href="/staff/chat"
                             onClick={() => setIsUserMenuOpen(false)}
                             className="block px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50 flex items-center gap-1.5"
                           >
@@ -616,7 +616,7 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                   </Link>
 
                   <Link
-                    href="/chat"
+                    href="/staff/chat"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-950 font-bold text-xs transition-colors"
                   >

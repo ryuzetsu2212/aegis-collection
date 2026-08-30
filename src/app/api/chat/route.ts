@@ -22,7 +22,8 @@ export async function GET(request: Request) {
     const targetRoomId = searchParams.get('room_user_id')
     const supabase = getSupabase()
 
-    if (user.role === 'admin' || user.role === 'staff') {
+    // Multi-room view for Admin, Staff, and Courier
+    if (user.role === 'admin' || user.role === 'staff' || user.role === 'courier') {
       if (targetRoomId) {
         const roomId = parseInt(targetRoomId, 10)
 
@@ -31,23 +32,48 @@ export async function GET(request: Request) {
           .from('chat_messages')
           .update({ is_read: 1 })
           .eq('sender_id', roomId)
+          .eq('room_user_id', user.id)
 
-        // Fetch messages exchanged between staff/admin and target user
+        // Fetch messages exchanged between current user and target room
         const { data: rawRes, error: err } = await supabase
           .from('chat_messages')
-          .select('*, sender:users!sender_id(full_name, avatar_url, role)')
-          .or(`room_user_id.eq.${roomId},sender_id.eq.${roomId}`)
+          .select('*')
+          .or(`and(room_user_id.eq.${roomId},sender_id.eq.${user.id}),and(room_user_id.eq.${user.id},sender_id.eq.${roomId}),and(room_user_id.eq.${roomId},sender_id.eq.${roomId})`)
           .order('created_at', { ascending: true })
 
-        if (err) throw new Error(err.message)
+        if (err) {
+          console.error('Error fetching room messages:', err)
+        }
 
-        const messages = (rawRes || []).map((m: any) => ({
-          ...m,
-          sender_name: m.sender?.full_name || 'User',
-          sender_avatar: m.sender?.avatar_url || null,
-          sender_role: m.sender?.role || 'user',
-          created_at: normalizeIso(m.created_at),
-        }))
+        const rawList = rawRes || []
+
+        // Fetch sender user details manually to be 100% fail-safe
+        const senderIds = Array.from(new Set(rawList.map((m: any) => m.sender_id)))
+        let userMap: Record<number, any> = {}
+
+        if (senderIds.length > 0) {
+          const { data: senders } = await supabase
+            .from('users')
+            .select('id, full_name, avatar_url, role')
+            .in('id', senderIds)
+
+          if (senders) {
+            senders.forEach((s: any) => {
+              userMap[s.id] = s
+            })
+          }
+        }
+
+        const messages = rawList.map((m: any) => {
+          const sender = userMap[m.sender_id]
+          return {
+            ...m,
+            sender_name: sender?.full_name || 'User',
+            sender_avatar: sender?.avatar_url || null,
+            sender_role: sender?.role || 'user',
+            created_at: normalizeIso(m.created_at),
+          }
+        })
 
         const { data: roomUser } = await supabase
           .from('users')
@@ -57,8 +83,16 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ messages, roomUser })
       } else {
-        // Staff/Admin room list view
-        const targetRoles = user.role === 'admin' ? ['staff'] : ['user', 'courier', 'admin']
+        // Room list view
+        let targetRoles: string[] = []
+        if (user.role === 'admin') {
+          targetRoles = ['staff', 'user', 'courier']
+        } else if (user.role === 'staff') {
+          targetRoles = ['user', 'courier', 'admin', 'staff']
+        } else if (user.role === 'courier') {
+          targetRoles = ['staff', 'admin']
+        }
+
         const { data: usersList } = await supabase
           .from('users')
           .select('id, full_name, email, avatar_url, role')
@@ -73,15 +107,17 @@ export async function GET(request: Request) {
 
         if (usersList) {
           usersList.forEach(u => {
-            roomMap[u.id] = {
-              room_user_id: u.id,
-              full_name: u.full_name,
-              email: u.email,
-              avatar_url: u.avatar_url,
-              role: u.role,
-              last_message: null,
-              last_created_at: null,
-              unread_count: 0,
+            if (u.id !== user.id) {
+              roomMap[u.id] = {
+                room_user_id: u.id,
+                full_name: u.full_name,
+                email: u.email,
+                avatar_url: u.avatar_url,
+                role: u.role,
+                last_message: null,
+                last_created_at: null,
+                unread_count: 0,
+              }
             }
           })
         }
@@ -110,7 +146,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ rooms })
       }
     } else {
-      // Pembeli / Kurir biasa: Hanya memuat pesan milik room_user_id sendiri
+      // Pembeli (regular customer) mode
       if (searchParams.get('mark_read') === 'true') {
         await supabase
           .from('chat_messages')
@@ -119,21 +155,41 @@ export async function GET(request: Request) {
           .neq('sender_id', user.id)
       }
 
-      const { data: rawRes, error: err } = await supabase
+      const { data: rawMessages, error: err } = await supabase
         .from('chat_messages')
-        .select('*, sender:users!sender_id(full_name, avatar_url, role)')
+        .select('*')
         .or(`room_user_id.eq.${user.id},sender_id.eq.${user.id}`)
         .order('created_at', { ascending: true })
 
-      if (err) throw new Error(err.message)
+      if (err) console.error('Error fetching customer messages:', err)
 
-      const messages = (rawRes || []).map((m: any) => ({
-        ...m,
-        sender_name: m.sender?.full_name || 'User',
-        sender_avatar: m.sender?.avatar_url || null,
-        sender_role: m.sender?.role || 'user',
-        created_at: normalizeIso(m.created_at),
-      }))
+      const rawList = rawMessages || []
+      const senderIds = Array.from(new Set(rawList.map((m: any) => m.sender_id)))
+      let userMap: Record<number, any> = {}
+
+      if (senderIds.length > 0) {
+        const { data: senders } = await supabase
+          .from('users')
+          .select('id, full_name, avatar_url, role')
+          .in('id', senderIds)
+
+        if (senders) {
+          senders.forEach((s: any) => {
+            userMap[s.id] = s
+          })
+        }
+      }
+
+      const messages = rawList.map((m: any) => {
+        const sender = userMap[m.sender_id]
+        return {
+          ...m,
+          sender_name: sender?.full_name || 'User',
+          sender_avatar: sender?.avatar_url || null,
+          sender_role: sender?.role || 'user',
+          created_at: normalizeIso(m.created_at),
+        }
+      })
 
       return NextResponse.json({ messages })
     }
@@ -158,11 +214,10 @@ export async function POST(request: Request) {
     const supabase = getSupabase()
     let roomId = user.id
 
-    if (user.role === 'admin' || user.role === 'staff') {
-      if (!room_user_id) {
-        return NextResponse.json({ error: 'room_user_id wajib diisi' }, { status: 400 })
+    if (user.role === 'admin' || user.role === 'staff' || user.role === 'courier') {
+      if (room_user_id) {
+        roomId = parseInt(room_user_id, 10)
       }
-      roomId = parseInt(room_user_id, 10)
     }
 
     const nowIso = new Date().toISOString()
@@ -175,17 +230,20 @@ export async function POST(request: Request) {
         created_at: nowIso,
         is_read: 0,
       })
-      .select('*, sender:users!sender_id(full_name, avatar_url, role)')
+      .select('*')
       .single()
 
-    if (insertErr) throw new Error(insertErr.message)
+    if (insertErr) {
+      console.error('Error inserting chat message:', insertErr)
+      throw new Error(insertErr.message)
+    }
 
     const newMessage = inserted
       ? {
           ...inserted,
-          sender_name: inserted.sender?.full_name || user.full_name || 'User',
-          sender_avatar: inserted.sender?.avatar_url || user.avatar_url || null,
-          sender_role: inserted.sender?.role || user.role || 'user',
+          sender_name: user.full_name || 'User',
+          sender_avatar: user.avatar_url || null,
+          sender_role: user.role || 'user',
           created_at: normalizeIso(inserted.created_at),
         }
       : null

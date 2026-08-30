@@ -44,6 +44,10 @@ export default function CustomerChatPage() {
         if (res.ok) {
           const data = await res.json()
           setUser(data.user)
+          if (data.user?.role === 'courier' || data.user?.role === 'staff' || data.user?.role === 'admin') {
+            window.location.href = '/staff/chat'
+            return
+          }
         }
       } catch (err) {
         // Silent

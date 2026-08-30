@@ -193,6 +193,7 @@ export default function StaffChatPage() {
   )
 
   const isAdmin = currentUser?.role === 'admin'
+  const isCourier = currentUser?.role === 'courier'
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -224,14 +225,24 @@ export default function StaffChatPage() {
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight flex items-center gap-2">
             {isAdmin ? (
               <ShieldCheck className="h-6 w-6 text-purple-600" />
+            ) : isCourier ? (
+              <MessageSquare className="h-6 w-6 text-amber-600" />
             ) : (
               <MessageSquare className="h-6 w-6 text-blue-600" />
             )}
-            <span>{isAdmin ? 'Pusat Chat Admin Toko (Internal Staf)' : 'Pusat Chat CS & Internal Staf'}</span>
+            <span>
+              {isAdmin
+                ? 'Pusat Chat Admin Toko (Internal Staf)'
+                : isCourier
+                ? 'Pusat Chat Kurir (ke Staf & Admin)'
+                : 'Pusat Chat CS & Internal Staf'}
+            </span>
           </h1>
           <p className="text-sm text-zinc-500 mt-1">
             {isAdmin
               ? 'Komunikasi dan koordinasi internal khusus antara Admin Toko dan Staf.'
+              : isCourier
+              ? 'Pilih salah satu nama Staf atau Admin toko di sebelah kiri untuk berkonsultasi seputar pengiriman.'
               : 'Kelola dan jawab pertanyaan pembeli, kurir, serta koordinasi internal toko.'}
           </p>
         </div>
@@ -254,7 +265,7 @@ export default function StaffChatPage() {
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
               <input
                 type="text"
-                placeholder={isAdmin ? 'Cari nama staf / email...' : 'Cari pembeli / kurir / admin...'}
+                placeholder={isAdmin ? 'Cari nama staf / email...' : isCourier ? 'Cari nama staf / admin...' : 'Cari pembeli / kurir / admin...'}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-zinc-100 border border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900"
