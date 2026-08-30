@@ -322,37 +322,6 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                         </>
                       )}
                       <Link
-                        href="/cart"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <ShoppingCart className="h-3.5 w-3.5 text-zinc-600" />
-                          <span>Keranjang Belanja</span>
-                        </div>
-                        {cartCount > 0 && (
-                          <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                            {cartCount}
-                          </span>
-                        )}
-                      </Link>
-                      <Link
-                        href="/orders"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
-                      >
-                        <ShoppingBag className="h-3.5 w-3.5 text-zinc-600" />
-                        <span>Pesanan Saya</span>
-                      </Link>
-                      <Link
-                        href="/wishlist"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
-                      >
-                        <Heart className="h-3.5 w-3.5 text-zinc-600" />
-                        <span>Wishlist Saya</span>
-                      </Link>
-                      <Link
                         href="/profile"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
