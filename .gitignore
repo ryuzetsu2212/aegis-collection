@@ -44,3 +44,10 @@ next-env.d.ts
 local.db
 local.db-wal
 local.db-shm
+
+# private docs
+LAPORAN_ANALISIS_KEAMANAN.md
+PRD.md
+design.md
+GEMINI.md
+
