@@ -124,14 +124,17 @@ export async function GET(request: Request) {
 
         if (allMessages) {
           allMessages.forEach(m => {
-            const targetRoom = m.room_user_id === user.id ? m.sender_id : m.room_user_id
-            if (roomMap[targetRoom]) {
-              if (!roomMap[targetRoom].last_message) {
-                roomMap[targetRoom].last_message = m.message
-                roomMap[targetRoom].last_created_at = normalizeIso(m.created_at)
-              }
-              if (m.sender_id === targetRoom && m.is_read === 0) {
-                roomMap[targetRoom].unread_count++
+            // Hanya proses pesan yang melibatkan pengguna yang sedang login (dikirim ke atau oleh pengguna)
+            if (m.sender_id === user.id || m.room_user_id === user.id) {
+              const targetRoom = m.room_user_id === user.id ? m.sender_id : m.room_user_id
+              if (roomMap[targetRoom]) {
+                if (!roomMap[targetRoom].last_message) {
+                  roomMap[targetRoom].last_message = m.message
+                  roomMap[targetRoom].last_created_at = normalizeIso(m.created_at)
+                }
+                if (m.sender_id === targetRoom && m.room_user_id === user.id && m.is_read === 0) {
+                  roomMap[targetRoom].unread_count++
+                }
               }
             }
           })
