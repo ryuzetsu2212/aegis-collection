@@ -9,7 +9,14 @@ import { Button } from '@/components/ui/Button'
 function LoginForm() {
   const searchParams = useSearchParams()
   const rawRedirect = searchParams.get('redirect') || '/'
-  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/'
+  const sanitizedRedirect = rawRedirect
+    .replace(/[\0-\x1F\x7F]/g, '')
+    .trim()
+  const isSafe = /^\/[^\/]/.test(sanitizedRedirect) && 
+    !/^(javascript|data|vbscript|file|about):/i.test(sanitizedRedirect) &&
+    !sanitizedRedirect.includes('\\') &&
+    sanitizedRedirect.length <= 2048
+  const redirectTo = isSafe ? sanitizedRedirect : '/'
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

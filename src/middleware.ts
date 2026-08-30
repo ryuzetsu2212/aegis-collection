@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
 
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    const safeRedirect = pathname.startsWith('/') && !pathname.startsWith('//') && !pathname.includes('javascript:') ? pathname : '/'
+    const safeRedirect = /^\/[^\/]/.test(pathname) && !/^(javascript|data|vbscript|file|about):/i.test(pathname) && !pathname.includes('\\') && pathname.length <= 2048 ? pathname : '/'
     url.searchParams.set('redirect', safeRedirect)
     return NextResponse.redirect(url)
   }
