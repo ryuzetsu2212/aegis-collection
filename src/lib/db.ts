@@ -121,47 +121,130 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
   }
 
   // 4. SELECT queries
-  const selectMatch = cleanSql.match(/SELECT\s+(.+?)\s+FROM\s+([a-z0-9_]+)(?:\s+([a-z0-9_]+))?(?:\s+(LEFT\s+JOIN|JOIN)\s+.*)?(?:\s+WHERE\s+(.+?))?(?:\s+GROUP\s+BY\s+.+?)?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i)
-  if (selectMatch) {
-    const tableName = selectMatch[2].trim()
-    const whereStr = selectMatch[5] || ''
-    const orderStr = selectMatch[6] || ''
-    const limitNum = selectMatch[7] ? parseInt(selectMatch[7], 10) : null
-
-    let query = supabase.from(tableName).select('*')
-
-    if (whereStr) {
+  if (upper.startsWith('SELECT')) {
+    // 4a. product_variants + products join
+    if (upper.includes('FROM PRODUCT_VARIANTS') && upper.includes('JOIN PRODUCTS')) {
+      let query = supabase.from('product_variants').select('id, stock, products!inner(id, price, is_active)')
       let pIdx = 0
-      const conds = whereStr.split(/\s+AND\s+/i)
-      for (const cond of conds) {
-        const eqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*\?/i)
-        if (eqMatch) {
-          const colName = eqMatch[1].split('.').pop()!
-          const val = params[pIdx++]
-          query = query.eq(colName, val)
-        } else if (cond.includes('is_active = 1')) {
-          query = query.eq('is_active', 1)
-        } else if (cond.includes('IS NULL')) {
-          const colName = cond.split(/\s+/)[0].split('.').pop()!
-          query = query.is(colName, null)
-        }
+
+      if (cleanSql.includes('pv.id = ?')) {
+        query = query.eq('id', params[pIdx++])
+      } else if (cleanSql.includes('p.id = ?')) {
+        query = query.eq('products.id', params[pIdx++])
+      }
+
+      if (cleanSql.includes('p.is_active = 1')) {
+        query = query.eq('products.is_active', 1)
+      }
+
+      if (cleanSql.includes('ORDER BY pv.stock DESC')) {
+        query = query.order('stock', { ascending: false })
+      }
+
+      if (cleanSql.includes('LIMIT 1')) {
+        query = query.limit(1)
+      }
+
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+      const list = (data || []).map((row: any) => ({
+        id: row.id,
+        stock: row.stock,
+        price: row.products?.price ?? 0,
+      }))
+      return cleanSql.includes('LIMIT 1') ? list[0] ?? undefined : list
+    }
+
+    // 4b. orders + users + returns join
+    if (upper.includes('FROM ORDERS O') && upper.includes('JOIN USERS')) {
+      const orderId = params[params.length - 1]
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, users(email, full_name), returns(*)')
+        .eq('id', orderId)
+        .single()
+
+      if (error) throw new Error(error.message)
+      if (!data) return undefined
+
+      const ret = Array.isArray(data.returns) ? data.returns[0] : data.returns
+      return {
+        ...data,
+        user_email: data.users?.email,
+        user_full_name: data.users?.full_name,
+        return_id: ret?.id,
+        return_status: ret?.status,
+        return_reason: ret?.reason,
+        return_details: ret?.details,
+        return_photo_url: ret?.photo_url,
+        return_created_at: ret?.created_at,
+        return_admin_notes: ret?.admin_notes,
       }
     }
 
-    if (orderStr) {
-      const parts = orderStr.trim().split(/\s+/)
-      const col = parts[0].split('.').pop()!
-      const isAsc = Boolean(parts[1] && parts[1].toUpperCase() === 'ASC')
-      query = query.order(col, { ascending: isAsc })
+    // 4c. order_items + product_variants + products join
+    if (upper.includes('FROM ORDER_ITEMS OI') && upper.includes('JOIN PRODUCT_VARIANTS')) {
+      const orderId = params[params.length - 1]
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('*, product_variants(*, products(title, slug, image_url))')
+        .eq('order_id', orderId)
+
+      if (error) throw new Error(error.message)
+      return (data || []).map((item: any) => ({
+        ...item,
+        product_id: item.product_variants?.product_id,
+        size: item.product_variants?.size,
+        color: item.product_variants?.color,
+        product_title: item.product_variants?.products?.title,
+        product_slug: item.product_variants?.products?.slug,
+        image_url: item.product_variants?.products?.image_url,
+      }))
     }
 
-    if (limitNum) {
-      query = query.limit(limitNum)
-    }
+    // 4d. Standard table SELECT
+    const selectMatch = cleanSql.match(/SELECT\s+(.+?)\s+FROM\s+([a-z0-9_]+)(?:\s+([a-z0-9_]+))?(?:\s+(LEFT\s+JOIN|JOIN)\s+.*)?(?:\s+WHERE\s+(.+?))?(?:\s+GROUP\s+BY\s+.+?)?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i)
+    if (selectMatch) {
+      const tableName = selectMatch[2].trim()
+      const whereStr = selectMatch[5] || ''
+      const orderStr = selectMatch[6] || ''
+      const limitNum = selectMatch[7] ? parseInt(selectMatch[7], 10) : null
 
-    const { data, error } = await query
-    if (error) throw new Error(error.message)
-    return data || []
+      let query = supabase.from(tableName).select('*')
+
+      if (whereStr) {
+        let pIdx = 0
+        const conds = whereStr.split(/\s+AND\s+/i)
+        for (const cond of conds) {
+          const eqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*\?/i)
+          if (eqMatch) {
+            const colName = eqMatch[1].split('.').pop()!
+            const val = params[pIdx++]
+            query = query.eq(colName, val)
+          } else if (cond.includes('is_active = 1')) {
+            query = query.eq('is_active', 1)
+          } else if (cond.includes('IS NULL')) {
+            const colName = cond.split(/\s+/)[0].split('.').pop()!
+            query = query.is(colName, null)
+          }
+        }
+      }
+
+      if (orderStr) {
+        const parts = orderStr.trim().split(/\s+/)
+        const col = parts[0].split('.').pop()!
+        const isAsc = Boolean(parts[1] && parts[1].toUpperCase() === 'ASC')
+        query = query.order(col, { ascending: isAsc })
+      }
+
+      if (limitNum) {
+        query = query.limit(limitNum)
+      }
+
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+      return data || []
+    }
   }
 
   // Append RETURNING id if it's an INSERT statement without RETURNING
