@@ -73,10 +73,15 @@ export async function POST(request: NextRequest) {
     const fileName = `items/${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`
     const fullPath = join(UPLOAD_DIR, fileName)
 
-    await mkdir(join(UPLOAD_DIR, 'items'), { recursive: true })
-    await writeFile(fullPath, buffer)
+    let url = `/uploads/${fileName}`
 
-    const url = `/uploads/${fileName}`
+    try {
+      await mkdir(join(UPLOAD_DIR, 'items'), { recursive: true })
+      await writeFile(fullPath, buffer)
+    } catch (fsErr) {
+      console.warn('FileSystem write failed or read-only (Vercel serverless environment). Using Data URI fallback:', fsErr)
+      url = `data:${file.type};base64,${buffer.toString('base64')}`
+    }
 
     return NextResponse.json({ url })
   } catch (error) {
