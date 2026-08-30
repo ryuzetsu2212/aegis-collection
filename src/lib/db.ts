@@ -15,7 +15,6 @@ function getSupabase(): SupabaseClient {
 
 async function execSql(sql: string, params: any[] = []): Promise<any> {
   const supabase = getSupabase()
-  const strParams = params.map(p => (p === null || p === undefined ? '' : String(p)))
 
   // Replace SQLite specific functions / pragmas
   let cleanSql = sql
@@ -27,9 +26,21 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
     cleanSql += ' RETURNING id'
   }
 
+  // Safely interpolate parameters into cleanSql to avoid PostgreSQL type mismatches in PL/pgSQL
+  if (params && params.length > 0) {
+    let pIdx = 0
+    cleanSql = cleanSql.replace(/\?/g, () => {
+      const p = params[pIdx++]
+      if (p === null || p === undefined) return 'NULL'
+      if (typeof p === 'number') return String(p)
+      if (typeof p === 'boolean') return p ? '1' : '0'
+      return "'" + String(p).replace(/'/g, "''") + "'"
+    })
+  }
+
   const { data, error } = await supabase.rpc('exec_sql', {
     sql_text: cleanSql,
-    params: strParams,
+    params: [],
   })
 
   if (error) {
