@@ -236,10 +236,14 @@ export async function PUT(request: Request) {
     }
 
     // Batasan waktu maksimal 12 jam
-    const ageMs = Date.now() - new Date(existing.created_at).getTime()
-    const maxAgeMs = 12 * 60 * 60 * 1000
-    if (ageMs > maxAgeMs) {
-      return NextResponse.json({ error: 'Pesan yang dibuat lebih dari 12 jam lalu tidak dapat diedit lagi.' }, { status: 400 })
+    const iso = normalizeIso(existing.created_at) || existing.created_at
+    const msgTime = new Date(iso).getTime()
+    if (!isNaN(msgTime)) {
+      const ageMs = Math.abs(Date.now() - msgTime)
+      const maxAgeMs = 12 * 60 * 60 * 1000
+      if (ageMs > maxAgeMs) {
+        return NextResponse.json({ error: 'Pesan yang dibuat lebih dari 12 jam lalu tidak dapat diedit lagi.' }, { status: 400 })
+      }
     }
 
     const { error: updateErr } = await supabase
@@ -287,10 +291,14 @@ export async function DELETE(request: Request) {
     }
 
     // Batasan waktu maksimal 12 jam
-    const ageMs = Date.now() - new Date(existing.created_at).getTime()
-    const maxAgeMs = 12 * 60 * 60 * 1000
-    if (ageMs > maxAgeMs) {
-      return NextResponse.json({ error: 'Pesan yang dibuat lebih dari 12 jam lalu tidak dapat dihapus lagi.' }, { status: 400 })
+    const isoDel = normalizeIso(existing.created_at) || existing.created_at
+    const msgTimeDel = new Date(isoDel).getTime()
+    if (!isNaN(msgTimeDel)) {
+      const ageMsDel = Math.abs(Date.now() - msgTimeDel)
+      const maxAgeMs = 12 * 60 * 60 * 1000
+      if (ageMsDel > maxAgeMs) {
+        return NextResponse.json({ error: 'Pesan yang dibuat lebih dari 12 jam lalu tidak dapat dihapus lagi.' }, { status: 400 })
+      }
     }
 
     const { error: deleteErr } = await supabase

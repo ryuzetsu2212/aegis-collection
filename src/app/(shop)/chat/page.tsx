@@ -463,46 +463,63 @@ export default function ChatPage() {
                     const imgUrl = isImageMsg ? msg.message.replace('[IMAGE]', '') : ''
 
                     // Check 12 hours limit for edit/delete
-                    const ageMs = Date.now() - new Date(msg.created_at).getTime()
-                    const canModify = isMe && ageMs <= MAX_EDIT_AGE_MS
+                    let canModify = false
+                    if (isMe && msg.created_at) {
+                      try {
+                        let iso = msg.created_at.trim()
+                        if (!iso.endsWith('Z') && !iso.includes('+')) {
+                          iso = iso.includes(' ') ? iso.replace(' ', 'T') + 'Z' : iso + 'Z'
+                        }
+                        const t = new Date(iso).getTime()
+                        if (isNaN(t)) {
+                          canModify = true
+                        } else {
+                          const ageMs = Math.abs(Date.now() - t)
+                          canModify = ageMs <= MAX_EDIT_AGE_MS
+                        }
+                      } catch {
+                        canModify = true
+                      }
+                    }
                     const isEditing = editingMsgId === msg.id
 
                     return (
                       <div
                         key={msg.id}
-                        className={`flex flex-col group ${isMe ? 'items-end' : 'items-start'}`}
+                        className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div className="flex items-center gap-1.5 mb-1 text-[11px] text-zinc-400 font-medium px-1">
                           <span>{isMe ? 'Anda' : (msg.sender_name || 'Pengguna')}</span>
                           <span>•</span>
                           <span>{formatChatTime(msg.created_at)}</span>
-                        </div>
-
-                        <div className="flex items-center gap-1 max-w-[85%] sm:max-w-[75%]">
-                          {/* Left-side action buttons for sent messages */}
                           {canModify && !isEditing && (
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+                            <>
+                              <span>•</span>
                               {!isImageMsg && (
                                 <button
                                   type="button"
                                   onClick={() => handleStartEdit(msg)}
-                                  className="p-1 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                                  className="text-[10px] text-amber-600 hover:text-amber-700 font-bold hover:underline cursor-pointer flex items-center gap-0.5"
                                   title="Edit Pesan (Batas 12 Jam)"
                                 >
-                                  <Pencil className="h-3.5 w-3.5" />
+                                  <Pencil className="h-3 w-3" />
+                                  <span>Edit</span>
                                 </button>
                               )}
                               <button
                                 type="button"
                                 onClick={() => handleDeleteMessage(msg.id)}
-                                className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                className="text-[10px] text-red-500 hover:text-red-600 font-bold hover:underline cursor-pointer flex items-center gap-0.5"
                                 title="Hapus Pesan (Batas 12 Jam)"
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3 w-3" />
+                                <span>Hapus</span>
                               </button>
-                            </div>
+                            </>
                           )}
+                        </div>
 
+                        <div className="flex items-center gap-1 max-w-[85%] sm:max-w-[75%]">
                           {/* Message Bubble / Inline Edit Form */}
                           {isEditing ? (
                             <div className="bg-white border border-amber-300 rounded-2xl p-2.5 shadow-md flex-1 flex flex-col gap-2">
