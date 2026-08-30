@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { MessageSquare, Send, Bot, Sparkles, User, ArrowLeft, Loader2, Smile, ImagePlus, X, RefreshCw, Users, ShieldCheck, Truck, Pencil, Trash2, Check, RotateCcw } from 'lucide-react'
+import { MessageSquare, Send, Bot, Sparkles, User, ArrowLeft, Loader2, Smile, ImagePlus, X, RefreshCw, Users, ShieldCheck, Truck, Pencil, Trash2, Check, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatChatTime } from '@/lib/formatDate'
 import { compressImageIfNeeded } from '@/lib/imageCompressor'
@@ -58,6 +58,11 @@ export default function ChatPage() {
   const [editingMsgId, setEditingMsgId] = useState<number | null>(null)
   const [editingText, setEditingText] = useState('')
   const [isSavingEdit, setIsSavingEdit] = useState(false)
+
+  // Custom Delete Modal & Notification Modal state
+  const [deletingMsgId, setDeletingMsgId] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [toastError, setToastError] = useState<string | null>(null)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -210,10 +215,10 @@ export default function ChatPage() {
           }
         }
       } else {
-        alert('Gagal mengunggah gambar.')
+        setToastError('Gagal mengunggah gambar. Silakan coba lagi.')
       }
     } catch (err) {
-      console.error('Image upload failed', err)
+      setToastError('Terjadi kesalahan saat mengunggah gambar.')
     } finally {
       setIsUploadingImage(false)
       if (e.target) e.target.value = ''
@@ -240,30 +245,34 @@ export default function ChatPage() {
         if (selectedRoomId) fetchRoomMessages(selectedRoomId)
       } else {
         const data = await res.json()
-        alert(data.error || 'Gagal mengedit pesan.')
+        setToastError(data.error || 'Gagal mengedit pesan.')
       }
     } catch (err) {
-      alert('Terjadi kesalahan saat mengedit pesan.')
+      setToastError('Terjadi kesalahan saat mengedit pesan.')
     } finally {
       setIsSavingEdit(false)
     }
   }
 
-  // Handle Delete Message
-  const handleDeleteMessage = async (msgId: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus pesan ini?')) return
+  // Handle Delete Message via Custom Modal
+  const confirmDeleteMessage = async () => {
+    if (!deletingMsgId || isDeleting) return
+    setIsDeleting(true)
     try {
-      const res = await fetch(`/api/chat?id=${msgId}`, {
+      const res = await fetch(`/api/chat?id=${deletingMsgId}`, {
         method: 'DELETE',
       })
       if (res.ok) {
+        setDeletingMsgId(null)
         if (selectedRoomId) fetchRoomMessages(selectedRoomId)
       } else {
         const data = await res.json()
-        alert(data.error || 'Gagal menghapus pesan.')
+        setToastError(data.error || 'Gagal menghapus pesan.')
       }
     } catch (err) {
-      alert('Terjadi kesalahan saat menghapus pesan.')
+      setToastError('Terjadi kesalahan saat menghapus pesan.')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -280,6 +289,59 @@ export default function ChatPage() {
 
   return (
     <div className="flex-1 bg-zinc-50 flex flex-col">
+      {/* Custom Delete Confirmation Modal */}
+      {deletingMsgId && (
+        <div className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-zinc-100 flex flex-col items-center text-center space-y-3 animate-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center shadow-xs">
+              <Trash2 className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-zinc-900">Hapus Pesan Ini?</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Pesan ini akan dihapus secara permanen dari percakapan dan tidak dapat dikembalikan lagi.
+            </p>
+            <div className="flex items-center gap-2 w-full pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingMsgId(null)}
+                className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs py-2.5 rounded-xl transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteMessage}
+                disabled={isDeleting}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              >
+                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                <span>Ya, Hapus</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Toast Alert Modal */}
+      {toastError && (
+        <div className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-zinc-100 flex flex-col items-center text-center space-y-3 animate-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shadow-xs">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-zinc-900">Pemberitahuan</h3>
+            <p className="text-xs text-zinc-600 leading-relaxed">{toastError}</p>
+            <button
+              type="button"
+              onClick={() => setToastError(null)}
+              className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs py-2.5 rounded-xl transition-colors cursor-pointer shadow-sm pt-2"
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Full Preview Image Modal */}
       {selectedImageModal && (
         <div
@@ -508,7 +570,7 @@ export default function ChatPage() {
                               )}
                               <button
                                 type="button"
-                                onClick={() => handleDeleteMessage(msg.id)}
+                                onClick={() => setDeletingMsgId(msg.id)}
                                 className="text-[10px] text-red-500 hover:text-red-600 font-bold hover:underline cursor-pointer flex items-center gap-0.5"
                                 title="Hapus Pesan (Batas 12 Jam)"
                               >
