@@ -157,29 +157,47 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
 
     // 4b. orders + users + returns join
     if (upper.includes('FROM ORDERS O') && upper.includes('JOIN USERS')) {
-      const orderId = params[params.length - 1]
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*, users(email, full_name), returns(*)')
-        .eq('id', orderId)
-        .single()
+      let query = supabase.from('orders').select('*, users(email, full_name, phone), returns(*)')
+      let pIdx = 0
 
-      if (error) throw new Error(error.message)
-      if (!data) return undefined
-
-      const ret = Array.isArray(data.returns) ? data.returns[0] : data.returns
-      return {
-        ...data,
-        user_email: data.users?.email,
-        user_full_name: data.users?.full_name,
-        return_id: ret?.id,
-        return_status: ret?.status,
-        return_reason: ret?.reason,
-        return_details: ret?.details,
-        return_photo_url: ret?.photo_url,
-        return_created_at: ret?.created_at,
-        return_admin_notes: ret?.admin_notes,
+      if (cleanSql.includes('WHERE o.id = ?')) {
+        query = query.eq('id', params[pIdx++])
+      } else if (cleanSql.includes('WHERE o.user_id = ?')) {
+        query = query.eq('user_id', params[pIdx++])
+        if (cleanSql.includes('AND o.status = ?')) {
+          query = query.eq('status', params[pIdx++])
+        }
+      } else if (cleanSql.includes('WHERE o.status = ?')) {
+        query = query.eq('status', params[pIdx++])
       }
+
+      if (cleanSql.includes('ORDER BY o.created_at DESC')) {
+        query = query.order('created_at', { ascending: false })
+      }
+
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+      const list = (data || []).map((row: any) => {
+        const ret = Array.isArray(row.returns) ? row.returns[0] : row.returns
+        return {
+          ...row,
+          user_email: row.users?.email,
+          user_full_name: row.users?.full_name,
+          user_phone: row.users?.phone,
+          return_id: ret?.id,
+          return_status: ret?.status,
+          return_reason: ret?.reason,
+          return_details: ret?.details,
+          return_photo_url: ret?.photo_url,
+          return_created_at: ret?.created_at,
+          return_admin_notes: ret?.admin_notes,
+        }
+      })
+
+      if (cleanSql.includes('WHERE o.id = ?') && !cleanSql.includes('WHERE o.user_id = ?')) {
+        return list[0] ?? undefined
+      }
+      return list
     }
 
     // 4c. order_items + product_variants + products join
