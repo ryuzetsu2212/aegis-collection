@@ -91,8 +91,10 @@ export default async function HomePage({
       COALESCE((SELECT COUNT(*) FROM reviews WHERE product_id = p.id), 0) as total_reviews
   ` + baseWhere
 
-  // Order by sorting option (based on discounted selling price)
-  if (sort === 'price_asc') {
+  // Order by sorting option
+  if (sort === 'bestseller') {
+    query += ' ORDER BY (SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN product_variants pv ON oi.variant_id = pv.id WHERE pv.product_id = p.id) DESC, p.created_at DESC'
+  } else if (sort === 'price_asc') {
     query += ' ORDER BY (p.price * 0.5) ASC'
   } else if (sort === 'price_desc') {
     query += ' ORDER BY (p.price * 0.5) DESC'

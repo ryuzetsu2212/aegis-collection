@@ -79,6 +79,7 @@ export function AdvancedFilter({ categories }: AdvancedFilterProps) {
             className="bg-transparent text-xs font-semibold text-zinc-800 focus:outline-none cursor-pointer"
           >
             <option value="newest">Terbaru</option>
+            <option value="bestseller">🔥 Terlaris (Best Seller)</option>
             <option value="price_asc">Harga: Terendah ke Tinggi</option>
             <option value="price_desc">Harga: Tertinggi ke Rendah</option>
           </select>

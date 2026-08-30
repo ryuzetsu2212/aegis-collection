@@ -341,22 +341,45 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
         query = query.lte('price', maxP * 2)
       }
 
+      let isBestSellerSort = cleanSql.includes('SUM(oi.quantity)') || cleanSql.includes('bestseller')
+
       if (cleanSql.includes('ORDER BY (p.price * 0.5) ASC')) {
         query = query.order('price', { ascending: true })
       } else if (cleanSql.includes('ORDER BY (p.price * 0.5) DESC')) {
         query = query.order('price', { ascending: false })
-      } else if (cleanSql.includes('ORDER BY p.created_at DESC')) {
+      } else if (!isBestSellerSort && cleanSql.includes('ORDER BY p.created_at DESC')) {
         query = query.order('created_at', { ascending: false })
       }
 
       if (cleanSql.includes('LIMIT ? OFFSET ?')) {
         const limitNum = params[params.length - 2]
         const offsetNum = params[params.length - 1]
-        query = query.range(offsetNum, offsetNum + limitNum - 1)
+        if (!isBestSellerSort) {
+          query = query.range(offsetNum, offsetNum + limitNum - 1)
+        }
       }
 
-      const { data, error } = await query
+      let { data, error } = await query
       if (error) throw new Error(error.message)
+
+      if (isBestSellerSort && data) {
+        const { data: sales } = await supabase.from('order_items').select('quantity, product_variants!inner(product_id)')
+        const salesMap: Record<number, number> = {}
+        if (sales) {
+          sales.forEach((s: any) => {
+            const pId = Number(s.product_variants?.product_id)
+            if (pId) {
+              salesMap[pId] = (salesMap[pId] || 0) + (Number(s.quantity) || 0)
+            }
+          })
+        }
+        data = [...data].sort((a: any, b: any) => (salesMap[Number(b.id)] || 0) - (salesMap[Number(a.id)] || 0))
+        if (cleanSql.includes('LIMIT ? OFFSET ?')) {
+          const limitNum = params[params.length - 2]
+          const offsetNum = params[params.length - 1]
+          data = data.slice(offsetNum, offsetNum + limitNum)
+        }
+      }
 
       const { data: revs } = await supabase.from('reviews').select('product_id, rating').range(0, 5000)
       const ratingMap: Record<number, { sum: number; count: number }> = {}
