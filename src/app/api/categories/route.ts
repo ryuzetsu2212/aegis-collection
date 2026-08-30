@@ -6,7 +6,8 @@ export async function GET() {
   try {
     const db = await getDb()
     const categories = await db.prepare('SELECT * FROM categories ORDER BY name ASC').all()
-    return NextResponse.json({ categories })
+    const list = Array.isArray(categories) ? categories : []
+    return NextResponse.json(list)
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 })
   }

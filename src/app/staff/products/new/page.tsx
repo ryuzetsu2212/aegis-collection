@@ -46,7 +46,8 @@ export default function NewProductPage() {
         const res = await fetch('/api/categories')
         if (res.ok) {
           const data = await res.json()
-          setCategories(data)
+          const catList = Array.isArray(data) ? data : Array.isArray(data?.categories) ? data.categories : []
+          setCategories(catList)
         }
       } catch (err) {
         // silent fail

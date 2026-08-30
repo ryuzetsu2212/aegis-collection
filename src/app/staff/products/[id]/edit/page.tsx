@@ -57,7 +57,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
         if (catRes.ok) {
           const catData = await catRes.json()
-          setCategories(catData)
+          const catList = Array.isArray(catData) ? catData : Array.isArray(catData?.categories) ? catData.categories : []
+          setCategories(catList)
         }
 
         if (!prodRes.ok) {
