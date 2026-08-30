@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, requireRole } from '@/lib/auth'
 
 // GET /api/reviews?productId=... OR ?orderId=...
 export async function GET(request: NextRequest) {
@@ -107,6 +107,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const msg = error instanceof Error ? error.message : 'Gagal menambah ulasan.'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
+// PUT /api/reviews - reply to review by Admin or Staff
+export async function PUT(request: NextRequest) {
+  try {
+    const user = await requireRole(['admin', 'staff'])
+    const body = await request.json()
+    const { reviewId, reply, deleteReply } = body
+
+    if (!reviewId) {
+      return NextResponse.json({ error: 'reviewId wajib diisi.' }, { status: 400 })
+    }
+
+    const db = await getDb()
+
+    if (deleteReply) {
+      await db.prepare(`
+        UPDATE reviews
+        SET admin_reply = NULL, replied_at = NULL
+        WHERE id = ?
+      `).run(reviewId)
+      return NextResponse.json({ success: true, message: 'Balasan ulasan berhasil dihapus.' })
+    }
+
+    if (!reply || !reply.trim()) {
+      return NextResponse.json({ error: 'Isi balasan ulasan tidak boleh kosong.' }, { status: 400 })
+    }
+
+    const nowIso = new Date().toISOString()
+    await db.prepare(`
+      UPDATE reviews
+      SET admin_reply = ?, replied_at = ?
+      WHERE id = ?
+    `).run(reply.trim(), nowIso, reviewId)
+
+    return NextResponse.json({ success: true, message: 'Balasan ulasan berhasil disimpan.' })
+  } catch (error) {
+    if (error instanceof Error && (error.message === 'UNAUTHORIZED' || error.message === 'FORBIDDEN')) {
+      return NextResponse.json({ error: 'Akses ditolak. Hanya Admin & Staf yang dapat membalas ulasan.' }, { status: 403 })
+    }
+    const msg = error instanceof Error ? error.message : 'Gagal menyimpan balasan ulasan.'
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

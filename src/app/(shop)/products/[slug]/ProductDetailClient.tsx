@@ -525,6 +525,7 @@ export function ProductDetailClient({
               if (selectedStarFilter === 'all') return true
               return Math.round(Number(r.rating)) === selectedStarFilter
             })}
+            onReviewUpdated={fetchReviews}
           />
         </div>
 
