@@ -239,8 +239,9 @@ export default function CheckoutPage() {
       const res = await fetch('/api/vouchers/public')
       if (!res.ok) throw new Error('Gagal memuat daftar voucher')
       const data = await res.json()
-      setAvailableVouchers(data.vouchers || [])
+      setAvailableVouchers(Array.isArray(data.vouchers) ? data.vouchers : [])
     } catch (err: any) {
+      setAvailableVouchers([])
       setFetchVouchersError(err.message || 'Gagal memuat voucher')
     } finally {
       setLoadingVouchers(false)
