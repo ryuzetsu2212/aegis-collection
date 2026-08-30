@@ -18,6 +18,7 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
 
   // Replace SQLite specific functions / pragmas
   let cleanSql = sql
+    .trim()
     .replace(/DATETIME\('now'\)/gi, 'CURRENT_TIMESTAMP')
     .replace(/DATETIME\(/gi, 'CAST(')
 
