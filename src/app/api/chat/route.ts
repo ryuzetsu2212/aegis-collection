@@ -90,8 +90,8 @@ export async function GET(request: Request) {
       } else if (user.role === 'courier') {
         targetRoles = ['staff', 'admin']
       } else {
-        // Pembeli (user) can pick which Staff/Admin to chat with
-        targetRoles = ['staff', 'admin']
+        // Pembeli (user) hanya bisa chat dengan Staf Toko (Admin sibuk, tidak ditampilkan)
+        targetRoles = ['staff']
       }
 
       const { data: usersList } = await supabase

@@ -355,7 +355,7 @@ export default function ChatPage() {
                     ? 'Pilih Staf atau Admin toko dari dropdown di bawah untuk mengobrol'
                     : isStaffOrAdmin
                     ? 'Kelola dan jawab pesan kurir atau staf internal'
-                    : 'Pilih Staf atau Admin toko dari dropdown untuk mulai berkonsultasi'}
+                    : 'Pilih Staf toko dari dropdown di bawah untuk mulai berkonsultasi'}
                 </p>
               </div>
             </div>
@@ -404,7 +404,7 @@ export default function ChatPage() {
                   ) : (
                     <>
                       <Bot className="h-4 w-4 text-amber-600" />
-                      <span>Pilih Staf / Admin yang mau di-chat:</span>
+                      <span>Pilih Staf Toko yang mau di-chat:</span>
                     </>
                   )}
                 </label>
@@ -415,7 +415,7 @@ export default function ChatPage() {
                   className="flex-1 bg-white border border-zinc-300 text-zinc-900 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-900 shadow-xs cursor-pointer"
                 >
                   {rooms.length === 0 && (
-                    <option value="">-- Belum ada akun staf/admin tersedia --</option>
+                    <option value="">-- Belum ada akun staf toko tersedia --</option>
                   )}
                   {rooms.map((r) => {
                     const roleLabel =
