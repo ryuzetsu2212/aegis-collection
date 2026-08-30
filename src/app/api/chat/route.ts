@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 
 function normalizeIso(ts: string | null | undefined) {
   if (!ts) return ts
@@ -20,141 +20,125 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const targetRoomId = searchParams.get('room_user_id')
-    const db = await getDb()
+    const supabase = getSupabase()
 
     if (user.role === 'admin' || user.role === 'staff') {
       if (targetRoomId) {
         const roomId = parseInt(targetRoomId, 10)
-        
-        // Mark as read messages from target user sent to current user
-        await db.prepare('UPDATE chat_messages SET is_read = 1 WHERE sender_id = ? AND (room_user_id = ? OR room_user_id = ?)').run(roomId, user.id, roomId)
 
-        // Select all messages exchanged between current user and target user
-        const rawRes = await db.prepare(`
-          SELECT c.*, u.full_name as sender_name, u.avatar_url as sender_avatar, u.role as sender_role
-          FROM chat_messages c
-          JOIN users u ON c.sender_id = u.id
-          WHERE (c.room_user_id = ? AND (c.sender_id = ? OR c.sender_id = ?))
-             OR (c.room_user_id = ? AND (c.sender_id = ? OR c.sender_id = ?))
-          ORDER BY c.created_at ASC
-        `).all(roomId, user.id, roomId, user.id, user.id, roomId)
-        const rawMessages = Array.isArray(rawRes) ? rawRes : []
+        // Mark unread messages from target user as read
+        await supabase
+          .from('chat_messages')
+          .update({ is_read: 1 })
+          .eq('sender_id', roomId)
 
-        const messages = rawMessages.map((m: any) => ({
+        // Fetch messages exchanged between staff/admin and target user
+        const { data: rawRes, error: err } = await supabase
+          .from('chat_messages')
+          .select('*, sender:users!sender_id(full_name, avatar_url, role)')
+          .or(`room_user_id.eq.${roomId},sender_id.eq.${roomId}`)
+          .order('created_at', { ascending: true })
+
+        if (err) throw new Error(err.message)
+
+        const messages = (rawRes || []).map((m: any) => ({
           ...m,
+          sender_name: m.sender?.full_name || 'User',
+          sender_avatar: m.sender?.avatar_url || null,
+          sender_role: m.sender?.role || 'user',
           created_at: normalizeIso(m.created_at),
         }))
 
-        const roomUser = await db.prepare('SELECT id, full_name, email, avatar_url, role FROM users WHERE id = ?').get(roomId)
+        const { data: roomUser } = await supabase
+          .from('users')
+          .select('id, full_name, email, avatar_url, role')
+          .eq('id', roomId)
+          .maybeSingle()
 
         return NextResponse.json({ messages, roomUser })
       } else {
-        let rawRooms: any[] = []
+        // Staff/Admin room list view
+        const targetRoles = user.role === 'admin' ? ['staff'] : ['user', 'courier', 'admin']
+        const { data: usersList } = await supabase
+          .from('users')
+          .select('id, full_name, email, avatar_url, role')
+          .in('role', targetRoles)
 
-        if (user.role === 'admin') {
-          // Admin ONLY chats with Staff members!
-          const roomsRes = await db.prepare(`
-            SELECT 
-              u.id as room_user_id,
-              u.full_name,
-              u.email,
-              u.avatar_url,
-              u.role,
-              (
-                SELECT message FROM chat_messages 
-                WHERE (room_user_id = u.id AND (sender_id = ? OR sender_id = u.id))
-                   OR (room_user_id = ? AND (sender_id = ? OR sender_id = u.id))
-                ORDER BY created_at DESC LIMIT 1
-              ) as last_message,
-              (
-                SELECT created_at FROM chat_messages 
-                WHERE (room_user_id = u.id AND (sender_id = ? OR sender_id = u.id))
-                   OR (room_user_id = ? AND (sender_id = ? OR sender_id = u.id))
-                ORDER BY created_at DESC LIMIT 1
-              ) as last_created_at,
-              (
-                SELECT COUNT(*) FROM chat_messages 
-                WHERE sender_id = u.id 
-                  AND (room_user_id = ? OR room_user_id = u.id) 
-                  AND is_read = 0
-              ) as unread_count
-            FROM users u
-            WHERE u.role = 'staff'
-            ORDER BY COALESCE(last_created_at, '1970-01-01') DESC, u.full_name ASC
-          `).all(
-            user.id, user.id, user.id, // last_message
-            user.id, user.id, user.id, // last_created_at
-            user.id                    // unread_count
-          )
-          rawRooms = Array.isArray(roomsRes) ? roomsRes : []
-        } else {
-          // Staff sees Buyers, Couriers, and Admin
-          const roomsRes = await db.prepare(`
-            SELECT 
-              u.id as room_user_id,
-              u.full_name,
-              u.email,
-              u.avatar_url,
-              u.role,
-              (
-                SELECT message FROM chat_messages 
-                WHERE (room_user_id = u.id AND (sender_id = ? OR sender_id = u.id))
-                   OR (room_user_id = ? AND (sender_id = ? OR sender_id = u.id))
-                ORDER BY created_at DESC LIMIT 1
-              ) as last_message,
-              (
-                SELECT created_at FROM chat_messages 
-                WHERE (room_user_id = u.id AND (sender_id = ? OR sender_id = u.id))
-                   OR (room_user_id = ? AND (sender_id = ? OR sender_id = u.id))
-                ORDER BY created_at DESC LIMIT 1
-              ) as last_created_at,
-              (
-                SELECT COUNT(*) FROM chat_messages 
-                WHERE sender_id = u.id 
-                  AND (room_user_id = ? OR room_user_id = u.id) 
-                  AND is_read = 0
-              ) as unread_count
-            FROM users u
-            WHERE u.role IN ('user', 'courier', 'admin')
-            ORDER BY COALESCE(last_created_at, '1970-01-01') DESC, u.full_name ASC
-          `).all(
-            user.id, user.id, user.id, // last_message
-            user.id, user.id, user.id, // last_created_at
-            user.id                    // unread_count
-          )
-          rawRooms = Array.isArray(roomsRes) ? roomsRes : []
+        const { data: allMessages } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        const roomMap: Record<number, any> = {}
+
+        if (usersList) {
+          usersList.forEach(u => {
+            roomMap[u.id] = {
+              room_user_id: u.id,
+              full_name: u.full_name,
+              email: u.email,
+              avatar_url: u.avatar_url,
+              role: u.role,
+              last_message: null,
+              last_created_at: null,
+              unread_count: 0,
+            }
+          })
         }
 
-        const rooms = rawRooms.map((r: any) => ({
-          ...r,
-          last_created_at: r.last_created_at ? normalizeIso(r.last_created_at) : null,
-        }))
+        if (allMessages) {
+          allMessages.forEach(m => {
+            const targetRoom = m.room_user_id === user.id ? m.sender_id : m.room_user_id
+            if (roomMap[targetRoom]) {
+              if (!roomMap[targetRoom].last_message) {
+                roomMap[targetRoom].last_message = m.message
+                roomMap[targetRoom].last_created_at = normalizeIso(m.created_at)
+              }
+              if (m.sender_id === targetRoom && m.is_read === 0) {
+                roomMap[targetRoom].unread_count++
+              }
+            }
+          })
+        }
+
+        const rooms = Object.values(roomMap).sort((a, b) => {
+          const timeA = a.last_created_at ? new Date(a.last_created_at).getTime() : 0
+          const timeB = b.last_created_at ? new Date(b.last_created_at).getTime() : 0
+          return timeB - timeA
+        })
 
         return NextResponse.json({ rooms })
       }
     } else {
-      // Pembeli / Kurir biasa
+      // Pembeli / Kurir biasa: Hanya memuat pesan milik room_user_id sendiri
       if (searchParams.get('mark_read') === 'true') {
-        await db.prepare('UPDATE chat_messages SET is_read = 1 WHERE (room_user_id = ? OR sender_id = ?) AND sender_id != ?').run(user.id, user.id, user.id)
+        await supabase
+          .from('chat_messages')
+          .update({ is_read: 1 })
+          .eq('room_user_id', user.id)
+          .neq('sender_id', user.id)
       }
 
-      const msgRes = await db.prepare(`
-        SELECT c.*, u.full_name as sender_name, u.avatar_url as sender_avatar, u.role as sender_role
-        FROM chat_messages c
-        JOIN users u ON c.sender_id = u.id
-        WHERE c.room_user_id = ? OR c.sender_id = ?
-        ORDER BY c.created_at ASC
-      `).all(user.id, user.id)
-      const rawMessages = Array.isArray(msgRes) ? msgRes : []
+      const { data: rawRes, error: err } = await supabase
+        .from('chat_messages')
+        .select('*, sender:users!sender_id(full_name, avatar_url, role)')
+        .or(`room_user_id.eq.${user.id},sender_id.eq.${user.id}`)
+        .order('created_at', { ascending: true })
 
-      const messages = rawMessages.map((m: any) => ({
+      if (err) throw new Error(err.message)
+
+      const messages = (rawRes || []).map((m: any) => ({
         ...m,
+        sender_name: m.sender?.full_name || 'User',
+        sender_avatar: m.sender?.avatar_url || null,
+        sender_role: m.sender?.role || 'user',
         created_at: normalizeIso(m.created_at),
       }))
 
       return NextResponse.json({ messages })
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Chat GET Error:', error)
     return NextResponse.json({ error: 'Terjadi kesalahan pada server.' }, { status: 500 })
   }
 }
@@ -171,7 +155,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Pesan tidak boleh kosong' }, { status: 400 })
     }
 
-    const db = await getDb()
+    const supabase = getSupabase()
     let roomId = user.id
 
     if (user.role === 'admin' || user.role === 'staff') {
@@ -182,24 +166,33 @@ export async function POST(request: Request) {
     }
 
     const nowIso = new Date().toISOString()
-    const result = await db.prepare(`
-      INSERT INTO chat_messages (sender_id, room_user_id, message, created_at)
-      VALUES (?, ?, ?, ?)
-    `).run(user.id, roomId, message.trim(), nowIso)
+    const { data: inserted, error: insertErr } = await supabase
+      .from('chat_messages')
+      .insert({
+        sender_id: user.id,
+        room_user_id: roomId,
+        message: message.trim(),
+        created_at: nowIso,
+        is_read: 0,
+      })
+      .select('*, sender:users!sender_id(full_name, avatar_url, role)')
+      .single()
 
-    const rawMessage = (await db.prepare(`
-      SELECT c.*, u.full_name as sender_name, u.avatar_url as sender_avatar, u.role as sender_role
-      FROM chat_messages c
-      JOIN users u ON c.sender_id = u.id
-      WHERE c.id = ?
-    `).get(result.lastInsertRowid)) as any
+    if (insertErr) throw new Error(insertErr.message)
 
-    const newMessage = rawMessage
-      ? { ...rawMessage, created_at: normalizeIso(rawMessage.created_at) }
+    const newMessage = inserted
+      ? {
+          ...inserted,
+          sender_name: inserted.sender?.full_name || user.full_name || 'User',
+          sender_avatar: inserted.sender?.avatar_url || user.avatar_url || null,
+          sender_role: inserted.sender?.role || user.role || 'user',
+          created_at: normalizeIso(inserted.created_at),
+        }
       : null
 
     return NextResponse.json({ success: true, message: newMessage })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Chat POST Error:', error)
     return NextResponse.json({ error: 'Terjadi kesalahan pada server.' }, { status: 500 })
   }
 }
