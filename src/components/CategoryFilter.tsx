@@ -32,7 +32,7 @@ export function CategoryFilter({ categories, selectedCategory }: CategoryFilterP
       className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-white text-zinc-900 text-sm"
     >
       <option value="" className="text-zinc-900 bg-white">Semua Kategori</option>
-      {categories.map((cat) => (
+      {(Array.isArray(categories) ? categories : []).map((cat) => (
         <option key={cat.id} value={cat.slug} className="text-zinc-900 bg-white">
           {cat.name}
         </option>

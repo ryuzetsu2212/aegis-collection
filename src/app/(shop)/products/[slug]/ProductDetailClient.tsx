@@ -487,7 +487,7 @@ export function ProductDetailClient({
         </div>
 
         {/* Related Products Section */}
-        {relatedProducts.length > 0 && (
+        {safeRelatedProducts.length > 0 && (
           <div className="mt-16 pt-10 border-t border-zinc-200">
             <div className="flex items-center gap-2 mb-6">
               <Sparkles className="h-5 w-5 text-amber-500" />
@@ -496,7 +496,7 @@ export function ProductDetailClient({
               </h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-              {relatedProducts.map((relProduct) => (
+              {safeRelatedProducts.map((relProduct) => (
                 <ProductCard
                   key={relProduct.id}
                   id={String(relProduct.id)}

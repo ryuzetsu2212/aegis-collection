@@ -15,13 +15,14 @@ interface ReviewListProps {
 }
 
 export function ReviewList({ reviews }: ReviewListProps) {
-  if (reviews.length === 0) {
+  const safeReviews = Array.isArray(reviews) ? reviews : []
+  if (safeReviews.length === 0) {
     return <p className="text-sm text-zinc-500">Belum ada ulasan untuk produk ini.</p>
   }
 
   return (
     <div className="space-y-4">
-      {reviews.map((review) => (
+      {safeReviews.map((review) => (
         <div key={review.id} className="border-b border-zinc-100 pb-4 last:border-b-0">
           <div className="flex items-center gap-2">
             <div className="flex items-center">
