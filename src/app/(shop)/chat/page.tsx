@@ -312,11 +312,11 @@ export default function ChatPage() {
                 )}
               </div>
               <div>
-                <h1 className="font-bold text-sm sm:text-base leading-tight flex items-center gap-2">
+                <h1 className="font-bold text-sm sm:text-base text-white leading-tight flex items-center gap-2">
                   {isCourier
-                    ? 'Pusat Chat Kurir'
+                    ? 'Pusat Chat Kurir (ke Staf & Admin)'
                     : isStaffOrAdmin
-                    ? 'Pusat Chat Staf & Admin'
+                    ? 'Pusat Chat Admin Toko (Internal Staf)'
                     : 'Aegis Customer Service'}
                   <Sparkles className="h-4 w-4 text-amber-400 fill-amber-400 shrink-0" />
                 </h1>

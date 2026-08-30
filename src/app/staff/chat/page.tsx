@@ -219,25 +219,25 @@ export default function StaffChatPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="bg-zinc-900 text-white p-5 rounded-2xl mb-4 flex items-center justify-between shadow-md">
         <div>
-          <h1 className="text-xl font-bold text-zinc-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
             {isAdmin ? (
-              <ShieldCheck className="h-5 w-5 text-purple-600" />
+              <ShieldCheck className="h-5 w-5 text-purple-400" />
             ) : isCourier ? (
-              <Truck className="h-5 w-5 text-amber-600" />
+              <Truck className="h-5 w-5 text-amber-400" />
             ) : (
-              <MessageSquare className="h-5 w-5 text-blue-600" />
+              <MessageSquare className="h-5 w-5 text-blue-400" />
             )}
             <span>
               {isAdmin
-                ? 'Pusat Chat Admin Toko (Internal Staf & Kurir)'
+                ? 'Pusat Chat Admin Toko (Internal Staf)'
                 : isCourier
                 ? 'Pusat Chat Kurir (ke Staf & Admin)'
                 : 'Pusat Chat CS & Internal Staf'}
             </span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-300 mt-1">
             {isAdmin
               ? 'Komunikasi dan koordinasi internal antara Admin, Staf, dan Kurir.'
               : isCourier
@@ -249,9 +249,9 @@ export default function StaffChatPage() {
           type="button"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="flex items-center gap-1.5 text-xs font-semibold text-zinc-800 hover:text-zinc-900 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl shadow-xs hover:bg-zinc-100 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 px-3.5 py-2 rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer disabled:opacity-50"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
           {isRefreshing ? 'Memuat...' : 'Refresh'}
         </button>
       </div>
