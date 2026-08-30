@@ -8,7 +8,6 @@ import { useCartStore } from '@/lib/store/useCartStore'
 import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { Minus, Plus, ShoppingCart, Ruler, Sparkles, Star, MessageSquare, Zap } from 'lucide-react'
-import { WishlistButton } from '@/components/WishlistButton'
 import { SizeChartModal } from '@/components/SizeChartModal'
 import { ProductCard } from '@/components/ProductCard'
 import { ReviewList } from '@/components/ReviewList'
@@ -257,9 +256,6 @@ export function ProductDetailClient({
             <span className="absolute top-4 left-4 z-10 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wider">
               Diskon 50%
             </span>
-            <div className="absolute top-4 right-4 z-10">
-              <WishlistButton productId={product.id} />
-            </div>
           </div>
 
           {/* Product Info */}

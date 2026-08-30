@@ -93,30 +93,36 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
     }
   }
 
-  // 3. DELETE FROM table WHERE col = ?
+  // 3. DELETE FROM table WHERE ...
   if (upper.startsWith('DELETE FROM')) {
-    const match = cleanSql.match(/DELETE\s+FROM\s+([a-z0-9_]+)(?:\s+WHERE\s+([a-z0-9_.]+)\s*(=|IN)\s*(.+))?/i)
-    if (match) {
-      const tableName = match[1].trim()
-      const whereCol = match[2] ? match[2].trim().split('.').pop()! : null
-      const op = match[3] ? match[3].toUpperCase() : null
+    const tableNameMatch = cleanSql.match(/DELETE\s+FROM\s+([a-z0-9_]+)/i)
+    if (tableNameMatch) {
+      const tableName = tableNameMatch[1].trim()
+      let query = supabase.from(tableName).delete()
 
-      if (!whereCol) {
-        const { error } = await supabase.from(tableName).delete().neq('id', 0)
-        if (error) throw new Error(error.message)
-        return { success: true }
+      const whereIdx = upper.indexOf('WHERE')
+      if (whereIdx !== -1) {
+        const whereClause = cleanSql.slice(whereIdx + 5).trim()
+        const conds = whereClause.split(/\s+AND\s+/i)
+        let pIdx = 0
+        for (const cond of conds) {
+          const paramEqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*\?/i)
+          const inMatch = cond.match(/([a-z0-9_.]+)\s+IN\s*\(/i)
+          if (paramEqMatch) {
+            const colName = paramEqMatch[1].trim().split('.').pop()!
+            query = query.eq(colName, params[pIdx++])
+          } else if (inMatch) {
+            const colName = inMatch[1].trim().split('.').pop()!
+            query = query.in(colName, params.slice(pIdx))
+          }
+        }
+      } else {
+        query = query.neq('id', 0)
       }
 
-      if (op === '=') {
-        const val = params[0]
-        const { error } = await supabase.from(tableName).delete().eq(whereCol, val)
-        if (error) throw new Error(error.message)
-        return { success: true }
-      } else if (op === 'IN') {
-        const { error } = await supabase.from(tableName).delete().in(whereCol, params)
-        if (error) throw new Error(error.message)
-        return { success: true }
-      }
+      const { error } = await query
+      if (error) throw new Error(error.message)
+      return { success: true }
     }
   }
 
@@ -240,6 +246,27 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
           review_comment: rev ? rev.comment : undefined,
         }
       })
+    }
+
+    // 4c-2. wishlist + products join
+    if (upper.includes('FROM WISHLIST')) {
+      const userId = params[0]
+      let query = supabase.from('wishlist').select('product_id, products!inner(id, slug, title, price, image_url, categories(name))')
+      if (userId !== undefined) {
+        query = query.eq('user_id', userId)
+      }
+      query = query.order('created_at', { ascending: false })
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+      return (data || []).map((row: any) => ({
+        product_id: row.product_id,
+        id: row.products?.id,
+        slug: row.products?.slug,
+        title: row.products?.title,
+        price: row.products?.price,
+        image_url: row.products?.image_url,
+        category_name: row.products?.categories?.name || null,
+      }))
     }
 
     // 4d. products + categories query (Homepage & product listing)

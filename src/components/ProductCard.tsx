@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
-import { WishlistButton } from './WishlistButton'
 import { Star } from 'lucide-react'
 
 export interface ProductCardProps {
@@ -72,12 +71,6 @@ export function ProductCard({ id, slug, title, price, imageUrl, category, rating
           </div>
         </div>
       </Link>
-      <div className="absolute top-2 right-2 z-10">
-        <WishlistButton
-          productId={productId}
-          product={{ id, slug, title, price, imageUrl }}
-        />
-      </div>
     </div>
   )
 }
