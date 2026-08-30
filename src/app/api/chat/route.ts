@@ -30,16 +30,17 @@ export async function GET(request: Request) {
         await db.prepare('UPDATE chat_messages SET is_read = 1 WHERE sender_id = ? AND (room_user_id = ? OR room_user_id = ?)').run(roomId, user.id, roomId)
 
         // Select all messages exchanged between current user and target user
-        const rawMessages = db.prepare(`
+        const rawRes = await db.prepare(`
           SELECT c.*, u.full_name as sender_name, u.avatar_url as sender_avatar, u.role as sender_role
           FROM chat_messages c
           JOIN users u ON c.sender_id = u.id
           WHERE (c.room_user_id = ? AND (c.sender_id = ? OR c.sender_id = ?))
              OR (c.room_user_id = ? AND (c.sender_id = ? OR c.sender_id = ?))
           ORDER BY c.created_at ASC
-        `).all(roomId, user.id, roomId, user.id, user.id, roomId) as any[]
+        `).all(roomId, user.id, roomId, user.id, user.id, roomId)
+        const rawMessages = Array.isArray(rawRes) ? rawRes : []
 
-        const messages = rawMessages.map((m) => ({
+        const messages = rawMessages.map((m: any) => ({
           ...m,
           created_at: normalizeIso(m.created_at),
         }))
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
 
         if (user.role === 'admin') {
           // Admin ONLY chats with Staff members!
-          rawRooms = db.prepare(`
+          const roomsRes = await db.prepare(`
             SELECT 
               u.id as room_user_id,
               u.full_name,
@@ -84,10 +85,11 @@ export async function GET(request: Request) {
             user.id, user.id, user.id, // last_message
             user.id, user.id, user.id, // last_created_at
             user.id                    // unread_count
-          ) as any[]
+          )
+          rawRooms = Array.isArray(roomsRes) ? roomsRes : []
         } else {
           // Staff sees Buyers, Couriers, and Admin
-          rawRooms = db.prepare(`
+          const roomsRes = await db.prepare(`
             SELECT 
               u.id as room_user_id,
               u.full_name,
@@ -113,42 +115,39 @@ export async function GET(request: Request) {
                   AND is_read = 0
               ) as unread_count
             FROM users u
-            WHERE (u.role IN ('user', 'courier') AND EXISTS (
-                    SELECT 1 FROM chat_messages 
-                    WHERE (room_user_id = u.id AND (sender_id = ? OR sender_id = u.id))
-                       OR (room_user_id = ? AND (sender_id = ? OR sender_id = u.id))
-                  ))
-               OR u.role = 'admin'
+            WHERE u.role IN ('user', 'courier', 'admin')
             ORDER BY COALESCE(last_created_at, '1970-01-01') DESC, u.full_name ASC
           `).all(
             user.id, user.id, user.id, // last_message
             user.id, user.id, user.id, // last_created_at
-            user.id,                   // unread_count
-            user.id, user.id, user.id  // WHERE EXISTS
-          ) as any[]
+            user.id                    // unread_count
+          )
+          rawRooms = Array.isArray(roomsRes) ? roomsRes : []
         }
 
-        const rooms = rawRooms.map((r) => ({
+        const rooms = rawRooms.map((r: any) => ({
           ...r,
-          last_created_at: normalizeIso(r.last_created_at),
+          last_created_at: r.last_created_at ? normalizeIso(r.last_created_at) : null,
         }))
 
         return NextResponse.json({ rooms })
       }
     } else {
-      if (searchParams.get('mark_read') === '1') {
+      // Pembeli / Kurir biasa
+      if (searchParams.get('mark_read') === 'true') {
         await db.prepare('UPDATE chat_messages SET is_read = 1 WHERE (room_user_id = ? OR sender_id = ?) AND sender_id != ?').run(user.id, user.id, user.id)
       }
 
-      const rawMessages = db.prepare(`
+      const msgRes = await db.prepare(`
         SELECT c.*, u.full_name as sender_name, u.avatar_url as sender_avatar, u.role as sender_role
         FROM chat_messages c
         JOIN users u ON c.sender_id = u.id
         WHERE c.room_user_id = ? OR c.sender_id = ?
         ORDER BY c.created_at ASC
-      `).all(user.id, user.id) as any[]
+      `).all(user.id, user.id)
+      const rawMessages = Array.isArray(msgRes) ? msgRes : []
 
-      const messages = rawMessages.map((m) => ({
+      const messages = rawMessages.map((m: any) => ({
         ...m,
         created_at: normalizeIso(m.created_at),
       }))
@@ -183,17 +182,17 @@ export async function POST(request: Request) {
     }
 
     const nowIso = new Date().toISOString()
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO chat_messages (sender_id, room_user_id, message, created_at)
       VALUES (?, ?, ?, ?)
     `).run(user.id, roomId, message.trim(), nowIso)
 
-    const rawMessage = db.prepare(`
+    const rawMessage = (await db.prepare(`
       SELECT c.*, u.full_name as sender_name, u.avatar_url as sender_avatar, u.role as sender_role
       FROM chat_messages c
       JOIN users u ON c.sender_id = u.id
       WHERE c.id = ?
-    `).get(result.lastInsertRowid) as any
+    `).get(result.lastInsertRowid)) as any
 
     const newMessage = rawMessage
       ? { ...rawMessage, created_at: normalizeIso(rawMessage.created_at) }

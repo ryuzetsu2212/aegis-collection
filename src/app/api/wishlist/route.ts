@@ -7,13 +7,14 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth()
     const db = await getDb()
-    const rows = db.prepare(`
+    const rawRows = await db.prepare(`
       SELECT w.product_id, p.id, p.slug, p.title, p.price, p.image_url
       FROM wishlist w
       JOIN products p ON w.product_id = p.id
       WHERE w.user_id = ?
       ORDER BY w.created_at DESC
     `).all(user.id)
+    const rows = Array.isArray(rawRows) ? rawRows : []
     return NextResponse.json(rows)
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {

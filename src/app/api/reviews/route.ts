@@ -13,13 +13,14 @@ export async function GET(request: NextRequest) {
 
     if (orderId) {
       const user = await requireAuth()
-      const reviews = db.prepare(`
+      const rawReviews = await db.prepare(`
         SELECT r.*, u.full_name as user_name
         FROM reviews r
         JOIN users u ON r.user_id = u.id
         WHERE r.order_id = ? AND r.user_id = ?
         ORDER BY r.created_at DESC
       `).all(Number(orderId), user.id)
+      const reviews = Array.isArray(rawReviews) ? rawReviews : []
       return NextResponse.json(reviews)
     }
 
@@ -27,21 +28,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'productId atau orderId wajib diisi.' }, { status: 400 })
     }
 
-    const reviews = db.prepare(`
+    const rawReviews = await db.prepare(`
       SELECT r.*, u.full_name as user_name, u.email as user_email
       FROM reviews r
       JOIN users u ON r.user_id = u.id
       WHERE r.product_id = ?
       ORDER BY r.created_at DESC
-    `).all(Number(productId)) as any[]
+    `).all(Number(productId))
+    const reviews = (Array.isArray(rawReviews) ? rawReviews : []) as any[]
 
-    const stats = db.prepare(`
+    const stats = (await db.prepare(`
       SELECT 
         COUNT(*) as total_reviews,
         COALESCE(AVG(rating), 0) as average_rating
       FROM reviews
       WHERE product_id = ?
-    `).get(Number(productId)) as { total_reviews: number; average_rating: number }
+    `).get(Number(productId))) as { total_reviews: number; average_rating: number }
 
     return NextResponse.json({
       reviews,

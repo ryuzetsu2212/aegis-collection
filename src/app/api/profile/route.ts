@@ -10,9 +10,9 @@ export async function GET() {
     }
 
     const db = await getDb()
-    const user = db.prepare(
+    const user = (await db.prepare(
       'SELECT id, email, full_name, phone, address, kecamatan, village, maps_link, avatar_url, role, created_at FROM users WHERE id = ?'
-    ).get(session.id) as DbUser | undefined
+    ).get(session.id)) as DbUser | undefined
 
     if (!user) {
       return NextResponse.json({ error: 'User tidak ditemukan.' }, { status: 404 })
@@ -52,7 +52,7 @@ export async function PUT(request: NextRequest) {
     const db = await getDb()
 
     // Ambil data user saat ini dari DB
-    const currentUser = await db.prepare('SELECT * FROM users WHERE id = ?').get(session.id) as DbUser | undefined
+    const currentUser = (await db.prepare('SELECT * FROM users WHERE id = ?').get(session.id)) as DbUser | undefined
     if (!currentUser) {
       return NextResponse.json({ error: 'User tidak ditemukan.' }, { status: 404 })
     }
@@ -103,7 +103,7 @@ export async function PUT(request: NextRequest) {
     const targetMapsLink = maps_link !== undefined ? (maps_link ? maps_link.trim() : null) : (currentUser.maps_link || null)
     const targetAvatarUrl = avatar_url !== undefined ? (avatar_url ? avatar_url.trim() : null) : (currentUser.avatar_url || null)
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE users 
       SET full_name = ?, email = ?, phone = ?, address = ?, kecamatan = ?, village = ?, maps_link = ?, avatar_url = ?, password_hash = ?
       WHERE id = ?
@@ -120,9 +120,9 @@ export async function PUT(request: NextRequest) {
       session.id
     )
 
-    const updatedUser = db.prepare(
+    const updatedUser = (await db.prepare(
       'SELECT id, email, full_name, phone, address, kecamatan, village, maps_link, avatar_url, role, created_at FROM users WHERE id = ?'
-    ).get(session.id) as DbUser
+    ).get(session.id)) as DbUser
 
     return NextResponse.json({
       success: true,
