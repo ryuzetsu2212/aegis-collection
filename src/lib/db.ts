@@ -220,7 +220,139 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       }))
     }
 
-    // 4d. Standard table SELECT
+    // 4d. products + categories query (Homepage & product listing)
+    if (upper.includes('FROM PRODUCTS P')) {
+      if (upper.includes('SELECT COUNT(*) AS TOTAL')) {
+        let query = supabase.from('products').select('*, categories(name, slug)', { count: 'exact', head: true }).eq('is_active', 1)
+        let pIdx = 0
+
+        if (cleanSql.includes('p.title LIKE ? OR p.description LIKE ?')) {
+          const qVal = params[pIdx]
+          pIdx += 2
+          const cleanQ = String(qVal).replace(/%/g, '')
+          query = query.or(`title.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`)
+        }
+
+        if (cleanSql.includes('c.slug = ?')) {
+          const catSlug = params[pIdx++]
+          query = query.eq('categories.slug', catSlug)
+        }
+
+        if (cleanSql.includes('(p.price * 0.5) >= ?')) {
+          const minP = params[pIdx++]
+          query = query.gte('price', minP * 2)
+        }
+
+        if (cleanSql.includes('(p.price * 0.5) <= ?')) {
+          const maxP = params[pIdx++]
+          query = query.lte('price', maxP * 2)
+        }
+
+        const { count, error } = await query
+        if (error) throw new Error(error.message)
+        return { total: count || 0 }
+      }
+
+      let query = supabase.from('products').select('*, categories(name, slug)').eq('is_active', 1)
+      let pIdx = 0
+
+      if (cleanSql.includes('p.title LIKE ? OR p.description LIKE ?')) {
+        const qVal = params[pIdx]
+        pIdx += 2
+        const cleanQ = String(qVal).replace(/%/g, '')
+        query = query.or(`title.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`)
+      }
+
+      if (cleanSql.includes('c.slug = ?')) {
+        const catSlug = params[pIdx++]
+        query = query.eq('categories.slug', catSlug)
+      }
+
+      if (cleanSql.includes('(p.price * 0.5) >= ?')) {
+        const minP = params[pIdx++]
+        query = query.gte('price', minP * 2)
+      }
+
+      if (cleanSql.includes('(p.price * 0.5) <= ?')) {
+        const maxP = params[pIdx++]
+        query = query.lte('price', maxP * 2)
+      }
+
+      if (cleanSql.includes('ORDER BY (p.price * 0.5) ASC')) {
+        query = query.order('price', { ascending: true })
+      } else if (cleanSql.includes('ORDER BY (p.price * 0.5) DESC')) {
+        query = query.order('price', { ascending: false })
+      } else if (cleanSql.includes('ORDER BY p.created_at DESC')) {
+        query = query.order('created_at', { ascending: false })
+      }
+
+      if (cleanSql.includes('LIMIT ? OFFSET ?')) {
+        const limitNum = params[params.length - 2]
+        const offsetNum = params[params.length - 1]
+        query = query.range(offsetNum, offsetNum + limitNum - 1)
+      }
+
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+
+      const { data: revs } = await supabase.from('reviews').select('product_id, rating')
+      const ratingMap: Record<number, { sum: number; count: number }> = {}
+      if (revs) {
+        revs.forEach((r: any) => {
+          if (!ratingMap[r.product_id]) ratingMap[r.product_id] = { sum: 0, count: 0 }
+          ratingMap[r.product_id].sum += Number(r.rating) || 0
+          ratingMap[r.product_id].count += 1
+        })
+      }
+
+      return (data || []).map((p: any) => {
+        const stats = ratingMap[p.id] || { sum: 0, count: 0 }
+        return {
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          price: p.price,
+          image_url: p.image_url,
+          category_name: p.categories?.name || null,
+          category_slug: p.categories?.slug || null,
+          average_rating: stats.count > 0 ? Math.round((stats.sum / stats.count) * 10) / 10 : 0,
+          total_reviews: stats.count
+        }
+      })
+    }
+
+    // 4e. Generic SELECT COUNT(*)
+    if (upper.includes('SELECT COUNT(*)')) {
+      const match = cleanSql.match(/FROM\s+([a-z0-9_]+)(?:\s+WHERE\s+(.+?))?$/i)
+      if (match) {
+        const tableName = match[1].trim()
+        const whereStr = match[2] || ''
+        let query = supabase.from(tableName).select('*', { count: 'exact', head: true })
+
+        if (whereStr) {
+          let pIdx = 0
+          const conds = whereStr.split(/\s+AND\s+/i)
+          for (const cond of conds) {
+            const paramEqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*\?/i)
+            const literalEqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*['"]([^'"]+)['"]/i)
+
+            if (paramEqMatch) {
+              const colName = paramEqMatch[1].split('.').pop()!
+              query = query.eq(colName, params[pIdx++])
+            } else if (literalEqMatch) {
+              const colName = literalEqMatch[1].split('.').pop()!
+              query = query.eq(colName, literalEqMatch[2])
+            }
+          }
+        }
+
+        const { count, error } = await query
+        if (error) throw new Error(error.message)
+        return { count: count || 0, total: count || 0, total_reviews: count || 0 }
+      }
+    }
+
+    // 4f. Standard table SELECT
     const selectMatch = cleanSql.match(/SELECT\s+(.+?)\s+FROM\s+([a-z0-9_]+)(?:\s+([a-z0-9_]+))?(?:\s+(LEFT\s+JOIN|JOIN)\s+.*)?(?:\s+WHERE\s+(.+?))?(?:\s+GROUP\s+BY\s+.+?)?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i)
     if (selectMatch) {
       const tableName = selectMatch[2].trim()
