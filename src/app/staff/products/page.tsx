@@ -15,7 +15,7 @@ interface ProductWithVariants {
   slug: string
   price: number
   image_url: string
-  is_active: number
+  is_active: number | boolean
   category_name: string | null
   product_variants: { stock: number }[]
 }
@@ -162,13 +162,18 @@ export default function StaffProductsPage() {
                       })()}
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
-                        p.is_active === 1
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          : 'bg-rose-100 text-rose-800 border border-rose-200'
-                      }`}>
-                        {p.is_active === 1 ? 'Aktif' : 'Nonaktif'}
-                      </span>
+                      {(() => {
+                        const active = Number(p.is_active) === 1 || p.is_active === true
+                        return (
+                          <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
+                            active
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : 'bg-rose-100 text-rose-800 border border-rose-200'
+                          }`}>
+                            {active ? 'Aktif' : 'Nonaktif'}
+                          </span>
+                        )
+                      })()}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">

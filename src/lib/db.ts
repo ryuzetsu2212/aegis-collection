@@ -275,7 +275,10 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
         return { total: count || 0 }
       }
 
-      let query = supabase.from('products').select('*, categories(name, slug)').eq('is_active', 1)
+      let query = supabase.from('products').select('*, categories(name, slug)')
+      if (cleanSql.includes('p.is_active = 1')) {
+        query = query.eq('is_active', 1)
+      }
       let pIdx = 0
 
       if (cleanSql.includes('p.title LIKE ? OR p.description LIKE ?')) {
@@ -330,11 +333,13 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       return (data || []).map((p: any) => {
         const stats = ratingMap[p.id] || { sum: 0, count: 0 }
         return {
+          ...p,
           id: p.id,
           slug: p.slug,
           title: p.title,
           price: p.price,
           image_url: p.image_url,
+          is_active: p.is_active ?? 1,
           category_name: p.categories?.name || null,
           category_slug: p.categories?.slug || null,
           average_rating: stats.count > 0 ? Math.round((stats.sum / stats.count) * 10) / 10 : 0,
