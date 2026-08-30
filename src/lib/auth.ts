@@ -37,9 +37,9 @@ export async function getSession(): Promise<AuthUser | null> {
   if (!payload) return null
 
   const db = await getDb()
-  const user = db.prepare(
+  const user = (await db.prepare(
     'SELECT id, email, full_name, phone, address, kecamatan, village, maps_link, avatar_url, role FROM users WHERE id = ?'
-  ).get(payload.userId) as DbUser | undefined
+  ).get(payload.userId)) as DbUser | undefined
 
   if (!user) return null
 
@@ -80,9 +80,9 @@ export function hasRole(user: AuthUser, roles: ('admin' | 'staff' | 'courier' | 
 export async function loginUser(email: string, password: string): Promise<{ user: AuthUser; token: string } | null> {
   const db = await getDb()
   const cleanEmail = email.trim().toLowerCase()
-  const user = db.prepare(
+  const user = (await db.prepare(
     'SELECT id, email, password_hash, full_name, role FROM users WHERE LOWER(email) = ?'
-  ).get(cleanEmail) as DbUser | undefined
+  ).get(cleanEmail)) as DbUser | undefined
 
   if (!user) return null
 
@@ -112,14 +112,14 @@ export async function registerUser(
   if (existing) return null
 
   const hashed = await hashPassword(password)
-  const result = db.prepare(
+  const result = await db.prepare(
     'INSERT INTO users (email, password_hash, full_name, role) VALUES (?, ?, ?, ?)'
   ).run(email, hashed, full_name, 'user')
 
   const userId = result.lastInsertRowid as number
-  const user = db.prepare(
+  const user = (await db.prepare(
     'SELECT id, email, full_name, role FROM users WHERE id = ?'
-  ).get(userId) as DbUser
+  ).get(userId)) as DbUser
 
   const token = await createToken(user)
 
