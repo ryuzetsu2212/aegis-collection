@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="64" fill="url(#bg5)"/>
+  <!-- Head -->
+  <ellipse cx="64" cy="62" rx="21" ry="23" fill="#FED7AA"/>
+  <!-- Beanie Hat -->
+  <path d="M38 50 C38 28, 90 28, 90 50 L90 52 C90 52, 64 54, 38 52 Z" fill="#1E293B"/>
+  <rect x="36" y="46" width="56" height="10" rx="3" fill="#334155"/>
+  <!-- Sunglasses -->
+  <path d="M42 56 L60 56 L58 66 L44 66 Z" fill="#0F172A"/>
+  <path d="M68 56 L86 56 L84 66 L70 66 Z" fill="#0F172A"/>
+  <line x1="60" y1="58" x2="68" y2="58" stroke="#0F172A" stroke-width="2.5"/>
+  <!-- Smile -->
+  <path d="M58 72 Q64 76 70 72" stroke="#C2410C" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Clothes Jacket -->
+  <path d="M32 108 C32 88, 48 84, 64 84 C80 84, 96 88, 96 108 L96 128 L32 128 Z" fill="#0284C7"/>
+  <path d="M58 84 L64 128 L70 84" fill="#FFFFFF"/>
+</svg>
+

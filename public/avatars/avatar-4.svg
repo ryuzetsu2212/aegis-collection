@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="64" fill="url(#bg4)"/>
+  <!-- Hair back -->
+  <path d="M34 55 C34 32, 94 32, 94 55 L94 88 C94 88, 88 92, 78 92 L50 92 C40 92, 34 88, 34 88 Z" fill="#78350F"/>
+  <!-- Head -->
+  <ellipse cx="64" cy="60" rx="20" ry="22" fill="#FEF08A"/>
+  <!-- Beret hat -->
+  <path d="M30 45 C30 28, 90 22, 98 40 C98 44, 88 48, 64 48 C40 48, 30 46, 30 45 Z" fill="#991B1B"/>
+  <circle cx="64" cy="24" r="4" fill="#991B1B"/>
+  <!-- Glasses -->
+  <circle cx="53" cy="58" r="8" stroke="#1E293B" stroke-width="2.2" fill="none"/>
+  <circle cx="75" cy="58" r="8" stroke="#1E293B" stroke-width="2.2" fill="none"/>
+  <line x1="61" y1="58" x2="67" y2="58" stroke="#1E293B" stroke-width="2"/>
+  <!-- Eyes inside glasses -->
+  <circle cx="53" cy="58" r="2.5" fill="#0F172A"/>
+  <circle cx="75" cy="58" r="2.5" fill="#0F172A"/>
+  <!-- Smile -->
+  <path d="M59 69 Q64 74 69 69" stroke="#B91C1C" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Clothes -->
+  <path d="M32 108 C32 88, 48 84, 64 84 C80 84, 96 88, 96 108 L96 128 L32 128 Z" fill="#065F46"/>
+  <path d="M54 84 L64 96 L74 84" fill="#FEF08A"/>
+</svg>
+
