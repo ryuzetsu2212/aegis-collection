@@ -6,14 +6,15 @@ export default async function WishlistPage() {
   try {
     const user = await requireAuth()
     const db = await getDb()
-    const rows = db.prepare(`
+    const rawRows = await db.prepare(`
       SELECT p.id, p.slug, p.title, p.price, p.image_url, c.name as category_name
       FROM wishlist w
       JOIN products p ON w.product_id = p.id
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE w.user_id = ?
       ORDER BY w.created_at DESC
-    `).all(user.id) as any[]
+    `).all(user.id)
+    const rows = (Array.isArray(rawRows) ? rawRows : []) as any[]
 
     return (
       <div className="flex-1 bg-zinc-50">

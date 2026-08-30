@@ -40,7 +40,8 @@ export function ProductDetailClient({
   relatedProducts?: any[]
 }) {
   const router = useRouter()
-  const variants = product.product_variants || []
+  const variants = Array.isArray(product.product_variants) ? product.product_variants : []
+  const safeRelatedProducts = Array.isArray(relatedProducts) ? relatedProducts : []
 
   const initialColor = variants.length > 0 ? variants[0].color : null
   const initialSizes = variants.filter(v => v.size).map(v => v.size as string)

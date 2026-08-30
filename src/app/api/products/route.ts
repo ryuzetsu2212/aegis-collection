@@ -91,13 +91,15 @@ export async function GET(request: NextRequest) {
     params.push(limit, offset)
 
     const stmt = db.prepare(query)
-    const rows = (await stmt.all(...params)) as any[]
+    const rawRows = (await stmt.all(...params))
+    const rows = (Array.isArray(rawRows) ? rawRows : []) as any[]
 
     // Attach variants
     const products = await Promise.all(rows.map(async row => {
-      const variants = (await db.prepare(
+      const rawVariants = await db.prepare(
         'SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id = ?'
-      ).all(row.id)) as DbProductVariant[]
+      ).all(row.id)
+      const variants = (Array.isArray(rawVariants) ? rawVariants : []) as DbProductVariant[]
       return {
         ...row,
         product_variants: variants,

@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const db = await getDb()
-    const product = db.prepare(`
+    const product = (await db.prepare(`
       SELECT 
         p.*,
         c.name as category_name,
@@ -22,15 +22,16 @@ export async function GET(
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.id = ?
-    `).get(productId) as any
+    `).get(productId)) as any
 
     if (!product) {
       return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 })
     }
 
-    const variants = db.prepare(
+    const rawVariants = await db.prepare(
       'SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id = ?'
-    ).all(productId) as DbProductVariant[]
+    ).all(productId)
+    const variants = (Array.isArray(rawVariants) ? rawVariants : []) as DbProductVariant[]
 
     return NextResponse.json({
       ...product,

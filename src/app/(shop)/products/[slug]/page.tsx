@@ -11,7 +11,7 @@ export default async function ProductDetailPage({
   const { slug } = await params
   const db = await getDb()
 
-  const row = db.prepare(`
+  const row = (await db.prepare(`
     SELECT 
       p.*,
       c.name as category_name,
@@ -20,7 +20,7 @@ export default async function ProductDetailPage({
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.slug = ?
     LIMIT 1
-  `).get(slug) as any
+  `).get(slug)) as any
 
   if (!row) {
     return (
@@ -49,19 +49,21 @@ export default async function ProductDetailPage({
     )
   }
 
-  const variants = db.prepare(
+  const rawVariants = await db.prepare(
     'SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id = ?'
-  ).all(row.id) as DbProductVariant[]
+  ).all(row.id)
+  const variants = (Array.isArray(rawVariants) ? rawVariants : []) as DbProductVariant[]
 
   let relatedProducts: any[] = []
   if (row.category_id) {
-    relatedProducts = db.prepare(`
+    const rawRelated = await db.prepare(`
       SELECT p.*, c.name as category_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.category_id = ? AND p.id != ? AND p.is_active = 1
       LIMIT 4
     `).all(row.category_id, row.id)
+    relatedProducts = Array.isArray(rawRelated) ? rawRelated : []
   }
 
   const product = {
