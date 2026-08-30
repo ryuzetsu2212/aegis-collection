@@ -16,11 +16,153 @@ function getSupabase(): SupabaseClient {
 async function execSql(sql: string, params: any[] = []): Promise<any> {
   const supabase = getSupabase()
 
-  // Replace SQLite specific functions / pragmas
   let cleanSql = sql
     .trim()
+    .replace(/\s+/g, ' ')
     .replace(/DATETIME\('now'\)/gi, 'CURRENT_TIMESTAMP')
     .replace(/DATETIME\(/gi, 'CAST(')
+
+  const upper = cleanSql.toUpperCase()
+
+  // 1. INSERT INTO table (col1, col2) VALUES (?, ?)
+  if (upper.startsWith('INSERT INTO')) {
+    const match = cleanSql.match(/INSERT\s+INTO\s+([a-z0-9_]+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i)
+    if (match) {
+      const tableName = match[1].trim()
+      const cols = match[2].split(',').map(c => c.trim())
+      const record: Record<string, any> = {}
+      cols.forEach((col, idx) => {
+        const val = params[idx]
+        record[col] = val === undefined ? null : val
+      })
+
+      const { data, error } = await supabase
+        .from(tableName)
+        .insert(record)
+        .select('id')
+        .single()
+
+      if (error) throw new Error(error.message)
+      return [{ id: data?.id || 1 }]
+    }
+  }
+
+  // 2. UPDATE table SET ... WHERE col = ?
+  if (upper.startsWith('UPDATE')) {
+    const match = cleanSql.match(/UPDATE\s+([a-z0-9_]+)\s+SET\s+(.+?)\s+WHERE\s+([a-z0-9_.]+)\s*=\s*(.+)/i)
+    if (match) {
+      const tableName = match[1].trim()
+      const setClause = match[2].trim()
+      const whereCol = match[3].trim().split('.').pop()!
+      const whereVal = params[params.length - 1]
+
+      const record: Record<string, any> = {}
+      let pIdx = 0
+
+      if (setClause.includes('stock = MAX(0, stock - ?)')) {
+        const qty = params[pIdx++]
+        const { data: cur } = await supabase.from(tableName).select('stock').eq(whereCol, whereVal).single()
+        record['stock'] = Math.max(0, (cur ? Number(cur.stock) || 0 : 0) - qty)
+      } else if (setClause.includes('stock = stock + ?')) {
+        const qty = params[pIdx++]
+        const { data: cur } = await supabase.from(tableName).select('stock').eq(whereCol, whereVal).single()
+        record['stock'] = (cur ? Number(cur.stock) || 0 : 0) + qty
+      } else if (setClause.includes('used_count = used_count + 1')) {
+        const { data: cur } = await supabase.from(tableName).select('used_count').eq(whereCol, whereVal).single()
+        record['used_count'] = (cur ? Number(cur.used_count) || 0 : 0) + 1
+      } else if (setClause.includes('used_count = MAX(0, used_count - 1)')) {
+        const { data: cur } = await supabase.from(tableName).select('used_count').eq(whereCol, whereVal).single()
+        record['used_count'] = Math.max(0, (cur ? Number(cur.used_count) || 0 : 0) - 1)
+      } else {
+        const setAssignments = setClause.split(',')
+        for (const assign of setAssignments) {
+          const parts = assign.split('=').map(s => s.trim())
+          const colName = parts[0]
+          const valExpr = parts[1]
+          if (valExpr === '?') {
+            record[colName] = params[pIdx++]
+          } else if (valExpr && valExpr.includes('CURRENT_TIMESTAMP')) {
+            record[colName] = new Date().toISOString()
+          }
+        }
+      }
+
+      const { error } = await supabase.from(tableName).update(record).eq(whereCol, whereVal)
+      if (error) throw new Error(error.message)
+      return { success: true }
+    }
+  }
+
+  // 3. DELETE FROM table WHERE col = ?
+  if (upper.startsWith('DELETE FROM')) {
+    const match = cleanSql.match(/DELETE\s+FROM\s+([a-z0-9_]+)(?:\s+WHERE\s+([a-z0-9_.]+)\s*(=|IN)\s*(.+))?/i)
+    if (match) {
+      const tableName = match[1].trim()
+      const whereCol = match[2] ? match[2].trim().split('.').pop()! : null
+      const op = match[3] ? match[3].toUpperCase() : null
+
+      if (!whereCol) {
+        const { error } = await supabase.from(tableName).delete().neq('id', 0)
+        if (error) throw new Error(error.message)
+        return { success: true }
+      }
+
+      if (op === '=') {
+        const val = params[0]
+        const { error } = await supabase.from(tableName).delete().eq(whereCol, val)
+        if (error) throw new Error(error.message)
+        return { success: true }
+      } else if (op === 'IN') {
+        const { error } = await supabase.from(tableName).delete().in(whereCol, params)
+        if (error) throw new Error(error.message)
+        return { success: true }
+      }
+    }
+  }
+
+  // 4. SELECT queries
+  const selectMatch = cleanSql.match(/SELECT\s+(.+?)\s+FROM\s+([a-z0-9_]+)(?:\s+([a-z0-9_]+))?(?:\s+(LEFT\s+JOIN|JOIN)\s+.*)?(?:\s+WHERE\s+(.+?))?(?:\s+GROUP\s+BY\s+.+?)?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i)
+  if (selectMatch) {
+    const tableName = selectMatch[2].trim()
+    const whereStr = selectMatch[5] || ''
+    const orderStr = selectMatch[6] || ''
+    const limitNum = selectMatch[7] ? parseInt(selectMatch[7], 10) : null
+
+    let query = supabase.from(tableName).select('*')
+
+    if (whereStr) {
+      let pIdx = 0
+      const conds = whereStr.split(/\s+AND\s+/i)
+      for (const cond of conds) {
+        const eqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*\?/i)
+        if (eqMatch) {
+          const colName = eqMatch[1].split('.').pop()!
+          const val = params[pIdx++]
+          query = query.eq(colName, val)
+        } else if (cond.includes('is_active = 1')) {
+          query = query.eq('is_active', 1)
+        } else if (cond.includes('IS NULL')) {
+          const colName = cond.split(/\s+/)[0].split('.').pop()!
+          query = query.is(colName, null)
+        }
+      }
+    }
+
+    if (orderStr) {
+      const parts = orderStr.trim().split(/\s+/)
+      const col = parts[0].split('.').pop()!
+      const isAsc = Boolean(parts[1] && parts[1].toUpperCase() === 'ASC')
+      query = query.order(col, { ascending: isAsc })
+    }
+
+    if (limitNum) {
+      query = query.limit(limitNum)
+    }
+
+    const { data, error } = await query
+    if (error) throw new Error(error.message)
+    return data || []
+  }
 
   // Append RETURNING id if it's an INSERT statement without RETURNING
   if (cleanSql.trim().toUpperCase().startsWith('INSERT') && !cleanSql.toUpperCase().includes('RETURNING')) {

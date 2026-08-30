@@ -352,8 +352,9 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const errMsg = error instanceof Error ? error.message : 'Gagal membuat pesanan.'
     return NextResponse.json(
-      { error: 'Gagal membuat pesanan.' },
+      { error: errMsg },
       { status: 500 }
     )
   }
