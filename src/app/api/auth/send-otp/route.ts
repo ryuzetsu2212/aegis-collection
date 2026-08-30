@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { sendOtpEmail } from '@/lib/mailer'
 import { randomInt } from 'crypto'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -35,10 +35,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const db = await getDb()
+    const supabase = getSupabase()
 
     // Cek apakah email sudah terdaftar
-    const existingUser = await db.prepare('SELECT id FROM users WHERE email = ?').get(cleanEmail)
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle()
+
     if (existingUser) {
       return NextResponse.json(
         { error: 'Email sudah terdaftar. Silakan masuk (login).' },
@@ -52,15 +57,18 @@ export async function POST(request: NextRequest) {
     // Valid selama 5 menit
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
-    // Simpan ke database (with attempt counter reset)
-    await db.prepare(`
-      INSERT INTO otp_codes (email, code, expires_at)
-      VALUES (?, ?, ?)
-      ON CONFLICT(email) DO UPDATE SET
-        code = excluded.code,
-        expires_at = excluded.expires_at,
-        created_at = CURRENT_TIMESTAMP
-    `).run(cleanEmail, otpCode, expiresAt)
+    // Simpan/Upsert ke database
+    const { error: upsertErr } = await supabase
+      .from('otp_codes')
+      .upsert({ email: cleanEmail, code: otpCode, expires_at: expiresAt }, { onConflict: 'email' })
+
+    if (upsertErr) {
+      console.error('Failed to upsert OTP code:', upsertErr)
+      return NextResponse.json(
+        { error: 'Gagal memproses kode OTP.' },
+        { status: 500 }
+      )
+    }
 
     // Kirim email
     try {
@@ -71,7 +79,7 @@ export async function POST(request: NextRequest) {
 
       if (mailErr?.response?.includes('only send testing emails to your own email address') || mailErr?.responseCode === 550) {
         return NextResponse.json({
-          message: `[Resend Free Sandbox Mode] Kode OTP untuk ${cleanEmail} adalah ${otpCode}. (Resend domain gratis hanya mengizinkan pengiriman email otomatis ke george213690@gmail.com).`,
+          message: `[Resend Free Sandbox Mode] Kode OTP untuk ${cleanEmail} adalah ${otpCode}.`,
         })
       }
 

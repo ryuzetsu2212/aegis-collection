@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { sendPasswordResetEmail } from '@/lib/mailer'
 import { randomInt } from 'crypto'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -34,10 +34,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const db = await getDb()
+    const supabase = getSupabase()
 
-    // Cek apakah email terdaftar di tabel users (berlaku untuk semua 4 role: user/customer, admin, staff, courier)
-    const existingUser = await db.prepare('SELECT id, role FROM users WHERE LOWER(email) = ?').get(cleanEmail)
+    // Cek apakah email terdaftar di tabel users
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id, role')
+      .eq('email', cleanEmail)
+      .maybeSingle()
+
     if (!existingUser) {
       return NextResponse.json(
         { error: 'Email tersebut belum terdaftar dalam sistem.' },
@@ -49,15 +54,18 @@ export async function POST(request: NextRequest) {
     const otpCode = randomInt(100000, 999999).toString()
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
-    // Save to otp_codes table
-    await db.prepare(`
-      INSERT INTO otp_codes (email, code, expires_at)
-      VALUES (?, ?, ?)
-      ON CONFLICT(email) DO UPDATE SET
-        code = excluded.code,
-        expires_at = excluded.expires_at,
-        created_at = CURRENT_TIMESTAMP
-    `).run(cleanEmail, otpCode, expiresAt)
+    // Save to otp_codes table via upsert
+    const { error: upsertErr } = await supabase
+      .from('otp_codes')
+      .upsert({ email: cleanEmail, code: otpCode, expires_at: expiresAt }, { onConflict: 'email' })
+
+    if (upsertErr) {
+      console.error('Failed to upsert forgot-password OTP code:', upsertErr)
+      return NextResponse.json(
+        { error: 'Gagal memproses kode OTP.' },
+        { status: 500 }
+      )
+    }
 
     // Send email via Resend / SMTP
     try {
@@ -68,7 +76,7 @@ export async function POST(request: NextRequest) {
 
       if (mailErr?.response?.includes('only send testing emails to your own email address') || mailErr?.responseCode === 550) {
         return NextResponse.json({
-          message: `[Resend Free Sandbox Mode] Kode OTP untuk ${cleanEmail} adalah ${otpCode}. (Resend domain gratis hanya mengizinkan pengiriman email otomatis ke george213690@gmail.com).`,
+          message: `[Resend Free Sandbox Mode] Kode OTP untuk ${cleanEmail} adalah ${otpCode}.`,
         })
       }
 
@@ -89,4 +97,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
