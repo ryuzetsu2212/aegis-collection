@@ -86,9 +86,9 @@ export async function GET(request: Request) {
         // Room list view
         let targetRoles: string[] = []
         if (user.role === 'admin') {
-          targetRoles = ['staff', 'user', 'courier']
+          targetRoles = ['staff', 'courier']
         } else if (user.role === 'staff') {
-          targetRoles = ['user', 'courier', 'admin', 'staff']
+          targetRoles = ['courier', 'admin', 'staff']
         } else if (user.role === 'courier') {
           targetRoles = ['staff', 'admin']
         }
