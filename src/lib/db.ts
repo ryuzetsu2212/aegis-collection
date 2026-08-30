@@ -203,21 +203,43 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
     // 4c. order_items + product_variants + products join
     if (upper.includes('FROM ORDER_ITEMS OI') && upper.includes('JOIN PRODUCT_VARIANTS')) {
       const orderId = params[params.length - 1]
-      const { data, error } = await supabase
+      const userId = params.length >= 2 ? params[0] : null
+
+      const { data: items, error } = await supabase
         .from('order_items')
         .select('*, product_variants(*, products(title, slug, image_url))')
         .eq('order_id', orderId)
 
       if (error) throw new Error(error.message)
-      return (data || []).map((item: any) => ({
-        ...item,
-        product_id: item.product_variants?.product_id,
-        size: item.product_variants?.size,
-        color: item.product_variants?.color,
-        product_title: item.product_variants?.products?.title,
-        product_slug: item.product_variants?.products?.slug,
-        image_url: item.product_variants?.products?.image_url,
-      }))
+
+      let revQuery = supabase.from('reviews').select('*').eq('order_id', orderId)
+      if (userId) {
+        revQuery = revQuery.eq('user_id', userId)
+      }
+      const { data: reviews } = await revQuery
+
+      const reviewMap: Record<number, any> = {}
+      if (reviews) {
+        reviews.forEach((r: any) => {
+          reviewMap[r.product_id] = r
+        })
+      }
+
+      return (items || []).map((item: any) => {
+        const pId = item.product_variants?.product_id
+        const rev = reviewMap[pId]
+        return {
+          ...item,
+          product_id: pId,
+          size: item.product_variants?.size,
+          color: item.product_variants?.color,
+          product_title: item.product_variants?.products?.title,
+          product_slug: item.product_variants?.products?.slug,
+          image_url: item.product_variants?.products?.image_url,
+          review_rating: rev ? rev.rating : undefined,
+          review_comment: rev ? rev.comment : undefined,
+        }
+      })
     }
 
     // 4d. products + categories query (Homepage & product listing)

@@ -37,18 +37,14 @@ export async function GET(request: NextRequest) {
     `).all(Number(productId))
     const reviews = (Array.isArray(rawReviews) ? rawReviews : []) as any[]
 
-    const stats = (await db.prepare(`
-      SELECT 
-        COUNT(*) as total_reviews,
-        COALESCE(AVG(rating), 0) as average_rating
-      FROM reviews
-      WHERE product_id = ?
-    `).get(Number(productId))) as { total_reviews: number; average_rating: number }
+    const totalReviews = reviews.length
+    const sumRating = reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0)
+    const averageRating = totalReviews > 0 ? Number((sumRating / totalReviews).toFixed(1)) : 5.0
 
     return NextResponse.json({
       reviews,
-      total_reviews: stats?.total_reviews || 0,
-      average_rating: Number((stats?.average_rating || 0).toFixed(1)),
+      total_reviews: totalReviews,
+      average_rating: averageRating,
     })
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
