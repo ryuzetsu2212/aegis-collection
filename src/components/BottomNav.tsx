@@ -59,12 +59,12 @@ export function BottomNav({ initialUser }: { initialUser?: AuthUser | null }) {
         </Link>
 
         <Link
-          href="/staff/chat"
+          href="/chat"
           className={`flex flex-col items-center justify-center flex-1 py-1 text-[11px] font-medium transition-colors ${
-            isActive('/staff/chat') ? 'text-blue-600 font-bold' : 'text-zinc-500 hover:text-zinc-800'
+            isActive('/chat') ? 'text-blue-600 font-bold' : 'text-zinc-500 hover:text-zinc-800'
           }`}
         >
-          <MessageSquare className={`h-5 w-5 mb-0.5 ${isActive('/staff/chat') ? 'text-blue-600 stroke-[2.5]' : 'text-zinc-500'}`} />
+          <MessageSquare className={`h-5 w-5 mb-0.5 ${isActive('/chat') ? 'text-blue-600 stroke-[2.5]' : 'text-zinc-500'}`} />
           <span>Chat Staf</span>
         </Link>
 

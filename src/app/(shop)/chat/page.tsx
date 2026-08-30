@@ -1,12 +1,22 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { MessageSquare, Send, Bot, Sparkles, User, ArrowLeft, Loader2, Smile, ImagePlus, X } from 'lucide-react'
+import { MessageSquare, Send, Bot, Sparkles, User, ArrowLeft, Loader2, Smile, ImagePlus, X, RefreshCw, Users, ShieldCheck, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatChatTime } from '@/lib/formatDate'
 import { compressImageIfNeeded } from '@/lib/imageCompressor'
+
+interface Room {
+  room_user_id: number
+  full_name: string | null
+  email: string
+  avatar_url: string | null
+  role?: string
+  last_message: string | null
+  last_created_at: string | null
+  unread_count: number
+}
 
 interface Message {
   id: number
@@ -26,7 +36,7 @@ const EMOJI_LIST = [
   '🤔', '🥳', '🙌', '👏', '🤝', '💪', '👌', '✌️'
 ]
 
-export default function CustomerChatPage() {
+export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -35,6 +45,13 @@ export default function CustomerChatPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null)
+
+  // Multi-room (Dropdown selection) state for Courier, Staff & Admin
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
+  const [roomUser, setRoomUser] = useState<any>(null)
+  const [isRefreshingRooms, setIsRefreshingRooms] = useState(false)
+
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -44,10 +61,6 @@ export default function CustomerChatPage() {
         if (res.ok) {
           const data = await res.json()
           setUser(data.user)
-          if (data.user?.role === 'courier' || data.user?.role === 'staff' || data.user?.role === 'admin') {
-            window.location.href = '/staff/chat'
-            return
-          }
         }
       } catch (err) {
         // Silent
@@ -58,8 +71,43 @@ export default function CustomerChatPage() {
     checkAuth()
   }, [])
 
-  const fetchMessages = async () => {
-    if (!user) return
+  // Fetch Rooms for Courier, Staff & Admin
+  const fetchRooms = async () => {
+    if (!user || user.role === 'user') return
+    try {
+      const res = await fetch('/api/chat')
+      if (res.ok) {
+        const data = await res.json()
+        const fetchedRooms: Room[] = data.rooms || []
+        setRooms(fetchedRooms)
+
+        // Auto select first room if none selected
+        if (!selectedRoomId && fetchedRooms.length > 0) {
+          setSelectedRoomId(fetchedRooms[0].room_user_id)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch rooms', err)
+    }
+  }
+
+  // Fetch Room Messages when a specific room is selected (Courier, Staff, Admin)
+  const fetchRoomMessages = async (roomId: number) => {
+    try {
+      const res = await fetch(`/api/chat?room_user_id=${roomId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages || [])
+        setRoomUser(data.roomUser)
+      }
+    } catch (err) {
+      console.error('Failed to fetch room messages', err)
+    }
+  }
+
+  // Fetch Messages for regular Customer (Pembeli)
+  const fetchCustomerMessages = async () => {
+    if (!user || user.role !== 'user') return
     try {
       const res = await fetch('/api/chat?mark_read=1')
       if (res.ok) {
@@ -67,22 +115,44 @@ export default function CustomerChatPage() {
         setMessages(data.messages || [])
       }
     } catch (err) {
-      console.error('Failed to fetch chat messages', err)
+      console.error('Failed to fetch customer messages', err)
     }
   }
 
   useEffect(() => {
     if (!user) return
-    fetchMessages()
-    const interval = setInterval(fetchMessages, 2000)
-    return () => clearInterval(interval)
-  }, [user])
+    if (user.role === 'user') {
+      fetchCustomerMessages()
+      const interval = setInterval(fetchCustomerMessages, 2000)
+      return () => clearInterval(interval)
+    } else {
+      fetchRooms()
+      const interval = setInterval(() => {
+        fetchRooms()
+        if (selectedRoomId) fetchRoomMessages(selectedRoomId)
+      }, 2000)
+      return () => clearInterval(interval)
+    }
+  }, [user, selectedRoomId])
+
+  useEffect(() => {
+    if (user && user.role !== 'user' && selectedRoomId) {
+      fetchRoomMessages(selectedRoomId)
+    }
+  }, [selectedRoomId])
 
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
     }
   }, [messages])
+
+  const handleRefreshRooms = async () => {
+    setIsRefreshingRooms(true)
+    await fetchRooms()
+    if (selectedRoomId) await fetchRoomMessages(selectedRoomId)
+    setTimeout(() => setIsRefreshingRooms(false), 400)
+  }
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,13 +164,24 @@ export default function CustomerChatPage() {
     setLoading(true)
 
     try {
+      const bodyPayload: any = { message: text }
+      if (user.role !== 'user' && selectedRoomId) {
+        bodyPayload.room_user_id = selectedRoomId
+      }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify(bodyPayload),
       })
+
       if (res.ok) {
-        fetchMessages()
+        if (user.role === 'user') {
+          fetchCustomerMessages()
+        } else if (selectedRoomId) {
+          fetchRoomMessages(selectedRoomId)
+          fetchRooms()
+        }
       }
     } catch (err) {
       console.error('Failed to send message', err)
@@ -126,14 +207,24 @@ export default function CustomerChatPage() {
 
       if (uploadRes.ok) {
         const { url } = await uploadRes.json()
+        const bodyPayload: any = { message: `[IMAGE]${url}` }
+        if (user.role !== 'user' && selectedRoomId) {
+          bodyPayload.room_user_id = selectedRoomId
+        }
+
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: `[IMAGE]${url}` }),
+          body: JSON.stringify(bodyPayload),
         })
 
         if (res.ok) {
-          fetchMessages()
+          if (user.role === 'user') {
+            fetchCustomerMessages()
+          } else if (selectedRoomId) {
+            fetchRoomMessages(selectedRoomId)
+            fetchRooms()
+          }
         }
       } else {
         alert('Gagal mengunggah gambar.')
@@ -153,6 +244,9 @@ export default function CustomerChatPage() {
       </div>
     )
   }
+
+  const isCourier = user?.role === 'courier'
+  const isStaffOrAdmin = user?.role === 'staff' || user?.role === 'admin'
 
   return (
     <div className="flex-1 bg-zinc-50 flex flex-col">
@@ -181,14 +275,26 @@ export default function CustomerChatPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6 w-full flex-1 flex flex-col min-h-0">
         {/* Header Back Button */}
-        <div className="mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <Link
-            href={user?.role === 'courier' ? '/courier' : '/'}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm text-zinc-500 hover:text-zinc-900 font-medium transition-colors"
+            href={isCourier ? '/courier' : '/'}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm text-zinc-600 hover:text-zinc-900 font-medium transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            {user?.role === 'courier' ? 'Kembali ke Dashboard Kurir' : 'Kembali ke Beranda'}
+            {isCourier ? 'Kembali ke Dashboard Kurir' : 'Kembali ke Beranda'}
           </Link>
+
+          {(isCourier || isStaffOrAdmin) && (
+            <button
+              type="button"
+              onClick={handleRefreshRooms}
+              disabled={isRefreshingRooms}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl hover:bg-zinc-100 cursor-pointer shadow-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingRooms ? 'animate-spin text-blue-600' : ''}`} />
+              <span>Refresh Chat</span>
+            </button>
+          )}
         </div>
 
         {/* Main Chat Card */}
@@ -197,23 +303,35 @@ export default function CustomerChatPage() {
           <div className="bg-zinc-900 text-white p-4 flex items-center justify-between border-b border-zinc-800 shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
-                <Bot className="h-5 w-5 text-amber-400" />
+                {isCourier ? (
+                  <Truck className="h-5 w-5 text-amber-400" />
+                ) : isStaffOrAdmin ? (
+                  <Users className="h-5 w-5 text-blue-400" />
+                ) : (
+                  <Bot className="h-5 w-5 text-amber-400" />
+                )}
               </div>
               <div>
                 <h1 className="font-bold text-sm sm:text-base leading-tight flex items-center gap-2">
-                  {user?.role === 'courier' ? 'Chat dengan Staff Toko' : 'Aegis Customer Service'}
+                  {isCourier
+                    ? 'Pusat Chat Kurir'
+                    : isStaffOrAdmin
+                    ? 'Pusat Chat Staf & Admin'
+                    : 'Aegis Customer Service'}
                   <Sparkles className="h-4 w-4 text-amber-400 fill-amber-400 shrink-0" />
                 </h1>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  {user?.role === 'courier'
-                    ? 'Koordinasi pengantaran & kendala pengiriman'
+                  {isCourier
+                    ? 'Pilih Staf atau Admin toko dari dropdown di bawah untuk mengobrol'
+                    : isStaffOrAdmin
+                    ? 'Kelola dan jawab pesan pembeli, kurir, atau staf internal'
                     : 'Bantuan & Konsultasi Pelanggan Bengkalis'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Tim CS Online</span>
+              <span>Online</span>
             </div>
           </div>
 
@@ -223,9 +341,9 @@ export default function CustomerChatPage() {
               <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm">
                 <MessageSquare className="h-8 w-8" />
               </div>
-              <h2 className="text-lg font-bold text-zinc-900">Konsultasi dengan CS Toko</h2>
+              <h2 className="text-lg font-bold text-zinc-900">Konsultasi dengan Toko</h2>
               <p className="text-xs sm:text-sm text-zinc-500 max-w-md leading-relaxed">
-                Silakan masuk ke akun Anda terlebih dahulu untuk mengobrol langsung dengan tim customer service kami mengenai ketersediaan stok, pertanyaan produk, atau konfirmasi pesanan Anda.
+                Silakan masuk ke akun Anda terlebih dahulu untuk mengobrol langsung dengan tim toko.
               </p>
               <div className="pt-2 flex flex-col sm:flex-row gap-3 w-full max-w-xs">
                 <Link href="/login" className="flex-1">
@@ -238,22 +356,54 @@ export default function CustomerChatPage() {
                 </Link>
               </div>
             </div>
-          ) : user.role === 'staff' || user.role === 'admin' ? (
-            /* Staff Notice */
-            <div className="flex-1 p-8 flex flex-col items-center justify-center text-center space-y-3 bg-zinc-50/50">
-              <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                <User className="h-7 w-7" />
-              </div>
-              <h2 className="text-base font-bold text-zinc-900">Anda Masuk Sebagai Staff Toko</h2>
-              <p className="text-xs text-zinc-500 max-w-md leading-relaxed">
-                Halaman ini khusus untuk percakapan Pelanggan/Kurir. Untuk melayani dan membalas pesan dari pelanggan toko, silakan buka Halaman Pusat Chat Staff.
-              </p>
-              <Link href="/staff/chat" className="pt-2">
-                <Button className="text-xs font-bold px-5 py-2.5">Buka Pusat Chat Staff</Button>
-              </Link>
-            </div>
           ) : (
             <>
+              {/* DROPDOWN SELECTOR UNTUK KURIR, STAF, & ADMIN */}
+              {(isCourier || isStaffOrAdmin) && (
+                <div className="p-3 bg-zinc-100 border-b border-zinc-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                  <label className="text-xs font-bold text-zinc-800 whitespace-nowrap flex items-center gap-1.5">
+                    {isCourier ? (
+                      <>
+                        <Truck className="h-4 w-4 text-amber-600" />
+                        <span>Pilih Staf / Admin yang mau di-chat:</span>
+                      </>
+                    ) : (
+                      <>
+                        <Users className="h-4 w-4 text-blue-600" />
+                        <span>Pilih Percakapan / Pengguna:</span>
+                      </>
+                    )}
+                  </label>
+
+                  <select
+                    value={selectedRoomId || ''}
+                    onChange={(e) => setSelectedRoomId(Number(e.target.value))}
+                    className="flex-1 bg-white border border-zinc-300 text-zinc-900 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-900 shadow-xs cursor-pointer"
+                  >
+                    {rooms.length === 0 && (
+                      <option value="">-- Belum ada daftar pengguna --</option>
+                    )}
+                    {rooms.map((r) => {
+                      const roleLabel =
+                        r.role === 'admin'
+                          ? '👑 Administrator'
+                          : r.role === 'staff'
+                          ? '📦 Staf Toko'
+                          : r.role === 'courier'
+                          ? '🚚 Kurir'
+                          : '👤 Pembeli'
+
+                      const unreadBadge = r.unread_count > 0 ? ` 🔴 (${r.unread_count} pesan baru)` : ''
+                      return (
+                        <option key={r.room_user_id} value={r.room_user_id}>
+                          {r.full_name || r.email} — [{roleLabel}]{unreadBadge}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+              )}
+
               {/* Messages Body */}
               <div
                 ref={messagesContainerRef}
@@ -264,9 +414,19 @@ export default function CustomerChatPage() {
                     <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center mb-3">
                       <MessageSquare className="h-7 w-7 text-zinc-400" />
                     </div>
-                    <p className="text-base font-bold text-zinc-800">Halo, Ada yang Bisa Kami Bantu?</p>
+                    <p className="text-base font-bold text-zinc-800">
+                      {isCourier
+                        ? 'Mulai Percakapan dengan Staf / Admin'
+                        : isStaffOrAdmin
+                        ? 'Pilih Pengguna dari Dropdown di Atas'
+                        : 'Halo, Ada yang Bisa Kami Bantu?'}
+                    </p>
                     <p className="text-xs text-zinc-500 mt-1 max-w-sm">
-                      Kirimkan pesan Anda di bawah ini untuk berkonsultasi seputar stok produk, rekomendasi pakaian, atau bantuan transaksi.
+                      {isCourier
+                        ? 'Silakan pilih nama Staf atau Admin pada dropdown di atas untuk berkonsultasi seputar pengiriman.'
+                        : isStaffOrAdmin
+                        ? 'Pilih salah satu nama pengguna dari dropdown di atas untuk mulai membalas pesan.'
+                        : 'Kirimkan pesan Anda di bawah ini untuk berkonsultasi seputar stok produk atau bantuan transaksi.'}
                     </p>
                   </div>
                 ) : (
@@ -281,11 +441,9 @@ export default function CustomerChatPage() {
                         className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div className="flex items-center gap-1.5 mb-1 text-[11px] text-zinc-400 font-medium px-1">
-                          <span>{isMe ? 'Anda' : (msg.sender_name || 'Tim CS Toko')}</span>
+                          <span>{isMe ? 'Anda' : (msg.sender_name || 'Pengguna')}</span>
                           <span>•</span>
-                          <span>
-                            {formatChatTime(msg.created_at)}
-                          </span>
+                          <span>{formatChatTime(msg.created_at)}</span>
                         </div>
                         <div
                           className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-2.5 text-xs sm:text-sm font-normal leading-relaxed shadow-xs ${
@@ -379,7 +537,13 @@ export default function CustomerChatPage() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Tulis pesan pertanyaan Anda di sini..."
+                    placeholder={
+                      isCourier
+                        ? 'Tulis pesan koordinasi pengiriman...'
+                        : isStaffOrAdmin
+                        ? 'Balas pesan...'
+                        : 'Tulis pesan pertanyaan Anda di sini...'
+                    }
                     className="flex-1 bg-zinc-100 border border-zinc-200 rounded-full px-4 py-2.5 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900"
                   />
                   <button
