@@ -366,20 +366,23 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
         let pIdx = 0
         const conds = whereStr.split(/\s+AND\s+/i)
         for (const cond of conds) {
-          const paramEqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*\?/i)
-          const literalEqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*['"]([^'"]+)['"]/i)
-          const numEqMatch = cond.match(/([a-z0-9_.]+)\s*=\s*(\d+)/i)
+          const paramEqMatch = cond.match(/([a-z0-9_.\(\)]+)\s*=\s*\?/i)
+          const literalEqMatch = cond.match(/([a-z0-9_.\(\)]+)\s*=\s*['"]([^'"]+)['"]/i)
+          const numEqMatch = cond.match(/([a-z0-9_.\(\)]+)\s*=\s*(\d+)/i)
 
           if (paramEqMatch) {
-            const colName = paramEqMatch[1].split('.').pop()!
+            const rawCol = paramEqMatch[1].replace(/LOWER\(([^)]+)\)/i, '$1').replace(/UPPER\(([^)]+)\)/i, '$1').trim()
+            const colName = rawCol.split('.').pop()!
             const val = params[pIdx++]
             query = query.eq(colName, val)
           } else if (literalEqMatch) {
-            const colName = literalEqMatch[1].split('.').pop()!
+            const rawCol = literalEqMatch[1].replace(/LOWER\(([^)]+)\)/i, '$1').replace(/UPPER\(([^)]+)\)/i, '$1').trim()
+            const colName = rawCol.split('.').pop()!
             const val = literalEqMatch[2]
             query = query.eq(colName, val)
           } else if (numEqMatch) {
-            const colName = numEqMatch[1].split('.').pop()!
+            const rawCol = numEqMatch[1].replace(/LOWER\(([^)]+)\)/i, '$1').replace(/UPPER\(([^)]+)\)/i, '$1').trim()
+            const colName = rawCol.split('.').pop()!
             const val = parseInt(numEqMatch[2], 10)
             query = query.eq(colName, val)
           } else if (cond.includes('IS NULL')) {
