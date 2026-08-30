@@ -87,7 +87,18 @@ export async function GET(request: NextRequest) {
     const totalRow = (await countStmt.get(...params)) as { total: number } | undefined
     const total = totalRow?.total ?? 0
 
-    query += ` ORDER BY p.created_at DESC LIMIT ? OFFSET ?`
+    const sort = searchParams.get('sort')
+    if (sort === 'bestseller') {
+      query += ` ORDER BY p.created_at DESC /* bestseller */`
+    } else if (sort === 'price_asc') {
+      query += ` ORDER BY (p.price * 0.5) ASC`
+    } else if (sort === 'price_desc') {
+      query += ` ORDER BY (p.price * 0.5) DESC`
+    } else {
+      query += ` ORDER BY p.created_at DESC`
+    }
+
+    query += ` LIMIT ? OFFSET ?`
     params.push(limit, offset)
 
     const stmt = db.prepare(query)

@@ -93,7 +93,7 @@ export default async function HomePage({
 
   // Order by sorting option
   if (sort === 'bestseller') {
-    query += ' ORDER BY (SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN product_variants pv ON oi.variant_id = pv.id WHERE pv.product_id = p.id) DESC, p.created_at DESC'
+    query += ' ORDER BY p.created_at DESC /* bestseller */'
   } else if (sort === 'price_asc') {
     query += ' ORDER BY (p.price * 0.5) ASC'
   } else if (sort === 'price_desc') {
