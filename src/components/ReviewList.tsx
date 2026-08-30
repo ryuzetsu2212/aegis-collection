@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Star, MessageCircle, Pencil, Trash2, Send, Loader2, CornerDownRight } from 'lucide-react'
+import { Star, MessageCircle, Pencil, Trash2, Send, Loader2, CornerDownRight, Sparkles } from 'lucide-react'
 
 interface Review {
   id: number
@@ -17,6 +17,25 @@ interface ReviewListProps {
   reviews: Review[]
   onReviewUpdated?: () => void
 }
+
+const QUICK_REPLY_TEMPLATES = [
+  {
+    label: '🙏 Terima Kasih & Awet',
+    text: 'Halo Kak! Terima kasih banyak telah berbelanja di Aegis Collection. Semoga suka dan produknya awet ya kak! Ditunggu pesanan berikutnya! 😊🙏',
+  },
+  {
+    label: '⭐ Bintang 5 & Kepuasan',
+    text: 'Terima kasih atas ulasan positif dan bintang 5 nya Kak! Kepuasan Kakak adalah prioritas utama kami. Happy shopping! 🛍️✨',
+  },
+  {
+    label: '📦 Pengiriman & Packing',
+    text: 'Terima kasih Kak! Kami selalu berusaha memberikan pengemasan paling aman & rapi serta pengiriman cepat untuk Anda. 📦🚚',
+  },
+  {
+    label: '⚠️ Permohonan Maaf & Solusi',
+    text: 'Halo Kak, mohon maaf atas ketidaknyamanannya. Tim kami siap membantu! Silakan hubungi CS kami via Chat Toko agar kami tindaklanjuti segera ya Kak. 🙏',
+  },
+]
 
 export function ReviewList({ reviews, onReviewUpdated }: ReviewListProps) {
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -167,17 +186,41 @@ export function ReviewList({ reviews, onReviewUpdated }: ReviewListProps) {
             {/* Inline Admin/Staff Reply Form */}
             {isReplyingThis && (
               <div className="mt-3 bg-blue-50/60 border border-blue-200 rounded-2xl p-3.5 flex flex-col gap-2.5 animate-in fade-in duration-150">
-                <label className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                  <MessageCircle className="h-4 w-4 text-blue-600" />
-                  <span>Balas ulasan ini sebagai {currentUser.role === 'admin' ? 'Admin' : 'Staf Toko'}:</span>
+                <label className="text-xs font-bold text-blue-900 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <MessageCircle className="h-4 w-4 text-blue-600" />
+                    <span>Balas ulasan ini sebagai {currentUser.role === 'admin' ? 'Admin' : 'Staf Toko'}:</span>
+                  </span>
                 </label>
+
+                {/* Quick Reply Templates */}
+                <div className="space-y-1.5 pt-0.5">
+                  <span className="text-[11px] font-bold text-zinc-600 flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 text-amber-500" /> Template Balasan Cepat (Klik untuk memilih):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {QUICK_REPLY_TEMPLATES.map((tmpl, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setReplyText(tmpl.text)}
+                        className="text-[11px] font-semibold text-zinc-700 bg-white hover:bg-blue-50 border border-zinc-200 hover:border-blue-300 px-2.5 py-1 rounded-lg transition-colors cursor-pointer text-left shadow-2xs"
+                        title={tmpl.text}
+                      >
+                        {tmpl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Tuliskan balasan toko di sini (contoh: Terima kasih telah berbelanja!)..."
-                  rows={2}
+                  placeholder="Tuliskan balasan toko di sini..."
+                  rows={3}
                   className="w-full text-xs text-zinc-900 bg-white border border-blue-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
+
                 <div className="flex items-center justify-between pt-1">
                   {review.admin_reply ? (
                     <button
