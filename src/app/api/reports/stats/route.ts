@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
 
 export async function GET(request: Request) {
   try {
     await requireRole(['admin'])
 
-    const db = await getDb()
+    const supabase = getSupabase()
     const { searchParams } = new URL(request.url)
 
     const startDate = searchParams.get('start_date') || ''
@@ -16,132 +16,159 @@ export async function GET(request: Request) {
     const minAmount = searchParams.get('min_amount') || ''
     const maxAmount = searchParams.get('max_amount') || ''
 
-    // 1. Overall Revenue Breakdown (Hari Ini, Minggu Ini, Bulan Ini, Tahun Ini)
-    const breakdown = db.prepare(`
-      SELECT 
-        COALESCE(SUM(CASE WHEN date(created_at, 'localtime') = date('now', 'localtime') AND status IN ('paid', 'shipped', 'completed') THEN total_amount ELSE 0 END), 0) as revenueToday,
-        COALESCE(SUM(CASE WHEN strftime('%Y-%W', created_at, 'localtime') = strftime('%Y-%W', 'now', 'localtime') AND status IN ('paid', 'shipped', 'completed') THEN total_amount ELSE 0 END), 0) as revenueThisWeek,
-        COALESCE(SUM(CASE WHEN strftime('%Y-%m', created_at, 'localtime') = strftime('%Y-%m', 'now', 'localtime') AND status IN ('paid', 'shipped', 'completed') THEN total_amount ELSE 0 END), 0) as revenueThisMonth,
-        COALESCE(SUM(CASE WHEN strftime('%Y', created_at, 'localtime') = strftime('%Y', 'now', 'localtime') AND status IN ('paid', 'shipped', 'completed') THEN total_amount ELSE 0 END), 0) as revenueThisYear,
-        
-        COALESCE(SUM(CASE WHEN date(created_at, 'localtime') = date('now', 'localtime') THEN 1 ELSE 0 END), 0) as ordersToday,
-        COALESCE(SUM(CASE WHEN strftime('%Y-%W', created_at, 'localtime') = strftime('%Y-%W', 'now', 'localtime') THEN 1 ELSE 0 END), 0) as ordersThisWeek,
-        COALESCE(SUM(CASE WHEN strftime('%Y-%m', created_at, 'localtime') = strftime('%Y-%m', 'now', 'localtime') THEN 1 ELSE 0 END), 0) as ordersThisMonth,
-        COALESCE(SUM(CASE WHEN strftime('%Y', created_at, 'localtime') = strftime('%Y', 'now', 'localtime') THEN 1 ELSE 0 END), 0) as ordersThisYear
-      FROM orders
-    `).get() as any
+    // 1. Fetch all orders with users for breakdown & stats
+    const { data: allOrders, error: ordersErr } = await supabase
+      .from('orders')
+      .select('*, users(full_name, email)')
+      .order('created_at', { ascending: false })
 
-    // 2. Build Filtered Query for Stats, Top Products, and Recent Orders
-    let whereClauses: string[] = []
-    let filterParams: any[] = []
+    if (ordersErr) throw new Error(ordersErr.message)
 
-    if (startDate) {
-      whereClauses.push("date(created_at, 'localtime') >= date(?)")
-      filterParams.push(startDate)
+    const orders = allOrders || []
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
+
+    // Get week start (Monday)
+    const d = new Date(now)
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    const weekStart = new Date(d.setDate(diff))
+    weekStart.setHours(0, 0, 0, 0)
+
+    const monthStr = todayStr.substring(0, 7)
+    const yearStr = todayStr.substring(0, 4)
+
+    let revenueToday = 0, revenueThisWeek = 0, revenueThisMonth = 0, revenueThisYear = 0
+    let ordersToday = 0, ordersThisWeek = 0, ordersThisMonth = 0, ordersThisYear = 0
+
+    orders.forEach(o => {
+      const createdAt = new Date(o.created_at)
+      const dateStr = o.created_at ? o.created_at.split('T')[0] : ''
+      const isPaid = ['paid', 'shipped', 'completed'].includes(o.status)
+
+      if (dateStr === todayStr) {
+        ordersToday++
+        if (isPaid) revenueToday += Number(o.total_amount) || 0
+      }
+
+      if (createdAt >= weekStart) {
+        ordersThisWeek++
+        if (isPaid) revenueThisWeek += Number(o.total_amount) || 0
+      }
+
+      if (dateStr.startsWith(monthStr)) {
+        ordersThisMonth++
+        if (isPaid) revenueThisMonth += Number(o.total_amount) || 0
+      }
+
+      if (dateStr.startsWith(yearStr)) {
+        ordersThisYear++
+        if (isPaid) revenueThisYear += Number(o.total_amount) || 0
+      }
+    })
+
+    // 2. Filter orders based on query parameters
+    const filteredOrders = orders.filter(o => {
+      const dateStr = o.created_at ? o.created_at.split('T')[0] : ''
+      if (startDate && dateStr < startDate) return false
+      if (endDate && dateStr > endDate) return false
+      if (purchaseType !== 'all' && o.purchase_type !== purchaseType) return false
+      if (statusFilter !== 'all' && o.status !== statusFilter) return false
+      if (minAmount && !isNaN(Number(minAmount)) && Number(o.total_amount) < Number(minAmount)) return false
+      if (maxAmount && !isNaN(Number(maxAmount)) && Number(o.total_amount) > Number(maxAmount)) return false
+      return true
+    })
+
+    let totalOrders = filteredOrders.length
+    let totalRevenue = 0
+    let pendingOrders = 0
+    let completedOrders = 0
+    let directOrders = 0
+    let onlineOrders = 0
+
+    filteredOrders.forEach(o => {
+      const amt = Number(o.total_amount) || 0
+      if (['paid', 'shipped', 'completed'].includes(o.status)) {
+        totalRevenue += amt
+      }
+      if (['pending', 'pending_confirmation'].includes(o.status)) {
+        pendingOrders++
+      }
+      if (o.status === 'completed') {
+        completedOrders++
+      }
+      if (o.purchase_type === 'direct') {
+        directOrders++
+      } else {
+        onlineOrders++
+      }
+    })
+
+    // 3. Top Products
+    const validOrderIds = new Set(filteredOrders.filter(o => ['paid', 'shipped', 'completed'].includes(o.status)).map(o => o.id))
+    const { data: orderItems } = await supabase
+      .from('order_items')
+      .select('*, product_variants(*, products(id, title, image_url))')
+
+    const productSalesMap: Record<number, { id: number; title: string; image_url: string; total_sold: number; total_sales: number }> = {}
+
+    if (orderItems) {
+      orderItems.forEach(item => {
+        if (validOrderIds.has(item.order_id)) {
+          const p = item.product_variants?.products
+          if (p) {
+            if (!productSalesMap[p.id]) {
+              productSalesMap[p.id] = {
+                id: p.id,
+                title: p.title,
+                image_url: p.image_url,
+                total_sold: 0,
+                total_sales: 0,
+              }
+            }
+            const qty = Number(item.quantity) || 0
+            const price = Number(item.price_at_purchase) || 0
+            productSalesMap[p.id].total_sold += qty
+            productSalesMap[p.id].total_sales += qty * price
+          }
+        }
+      })
     }
-    if (endDate) {
-      whereClauses.push("date(created_at, 'localtime') <= date(?)")
-      filterParams.push(endDate)
-    }
-    if (purchaseType && purchaseType !== 'all') {
-      whereClauses.push("purchase_type = ?")
-      filterParams.push(purchaseType)
-    }
-    if (statusFilter && statusFilter !== 'all') {
-      whereClauses.push("status = ?")
-      filterParams.push(statusFilter)
-    }
-    if (minAmount && !isNaN(Number(minAmount))) {
-      whereClauses.push("total_amount >= ?")
-      filterParams.push(Number(minAmount))
-    }
-    if (maxAmount && !isNaN(Number(maxAmount))) {
-      whereClauses.push("total_amount <= ?")
-      filterParams.push(Number(maxAmount))
-    }
 
-    const whereSql = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
+    const topProducts = Object.values(productSalesMap)
+      .sort((a, b) => b.total_sold - a.total_sold)
+      .slice(0, 5)
 
-    const statsQuery = `
-      SELECT 
-        COUNT(*) as totalOrders,
-        COALESCE(SUM(CASE WHEN status IN ('paid', 'shipped', 'completed') THEN total_amount ELSE 0 END), 0) as totalRevenue,
-        COALESCE(SUM(CASE WHEN status IN ('pending', 'pending_confirmation') THEN 1 ELSE 0 END), 0) as pendingOrders,
-        COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completedOrders,
-        COALESCE(SUM(CASE WHEN purchase_type = 'direct' THEN 1 ELSE 0 END), 0) as directOrders,
-        COALESCE(SUM(CASE WHEN purchase_type = 'online' OR purchase_type IS NULL THEN 1 ELSE 0 END), 0) as onlineOrders
-      FROM orders
-      ${whereSql}
-    `
-    const stats = await db.prepare(statsQuery).get(...filterParams) as any
+    // 4. Recent Orders
+    const recentOrders = filteredOrders.slice(0, 10).map(o => ({
+      id: o.id,
+      total_amount: o.total_amount,
+      status: o.status,
+      purchase_type: o.purchase_type || 'online',
+      payment_method: o.payment_method || 'cod',
+      created_at: o.created_at,
+      user_full_name: o.users?.full_name || 'Pelanggan',
+      user_email: o.users?.email || '',
+    }))
 
-    // Top Products with Filter
-    let topProductsWhere = " WHERE o.status IN ('paid', 'shipped', 'completed')"
-    if (whereClauses.length > 0) {
-      const topWhereList = whereClauses.map(c => c.replace(/\bcreated_at\b/g, 'o.created_at').replace(/\bpurchase_type\b/g, 'o.purchase_type').replace(/\bstatus\b/g, 'o.status').replace(/\btotal_amount\b/g, 'o.total_amount'))
-      topProductsWhere += ` AND ${topWhereList.join(' AND ')}`
-    }
-
-    const topProductsQuery = `
-      SELECT 
-        p.id,
-        p.title,
-        p.image_url,
-        SUM(oi.quantity) as total_sold,
-        SUM(oi.quantity * oi.price_at_purchase) as total_sales
-      FROM order_items oi
-      JOIN product_variants pv ON oi.variant_id = pv.id
-      JOIN products p ON pv.product_id = p.id
-      JOIN orders o ON oi.order_id = o.id
-      ${topProductsWhere}
-      GROUP BY p.id
-      ORDER BY total_sold DESC
-      LIMIT 5
-    `
-    const topProducts = await db.prepare(topProductsQuery).all(...filterParams) as any[]
-
-    // Recent Orders with Filter
-    let recentWhereSql = whereSql ? whereSql.replace(/\bcreated_at\b/g, 'o.created_at').replace(/\bpurchase_type\b/g, 'o.purchase_type').replace(/\bstatus\b/g, 'o.status').replace(/\btotal_amount\b/g, 'o.total_amount') : ''
-
-    const recentOrdersQuery = `
-      SELECT 
-        o.id,
-        o.total_amount,
-        o.status,
-        COALESCE(o.purchase_type, 'online') as purchase_type,
-        COALESCE(o.payment_method, 'cod') as payment_method,
-        o.created_at,
-        u.full_name as user_full_name,
-        u.email as user_email
-      FROM orders o
-      LEFT JOIN users u ON o.user_id = u.id
-      ${recentWhereSql}
-      ORDER BY o.created_at DESC
-      LIMIT 10
-    `
-    const recentOrders = await db.prepare(recentOrdersQuery).all(...filterParams) as any[]
-
-    // 4. Daily Revenue Trend Chart Data (Last 30 Days Continuous)
-    const dbChartData = db.prepare(`
-      SELECT 
-        strftime('%Y-%m-%d', created_at, 'localtime') as date,
-        COALESCE(SUM(CASE WHEN status IN ('paid', 'shipped', 'completed') THEN total_amount ELSE 0 END), 0) as revenue,
-        COUNT(id) as orders
-      FROM orders
-      WHERE date(created_at, 'localtime') >= date('now', 'localtime', '-29 days')
-      GROUP BY date
-      ORDER BY date ASC
-    `).all() as any[]
-
+    // 5. Daily Revenue Trend Chart Data (Last 30 Days Continuous)
     const dbMap = new Map<string, { revenue: number; orders: number }>()
-    for (const item of dbChartData) {
-      dbMap.set(item.date, { revenue: Number(item.revenue) || 0, orders: Number(item.orders) || 0 })
-    }
+    orders.forEach(o => {
+      const dateStr = o.created_at ? o.created_at.split('T')[0] : ''
+      if (dateStr) {
+        const cur = dbMap.get(dateStr) || { revenue: 0, orders: 0 }
+        cur.orders++
+        if (['paid', 'shipped', 'completed'].includes(o.status)) {
+          cur.revenue += Number(o.total_amount) || 0
+        }
+        dbMap.set(dateStr, cur)
+      }
+    })
 
     const chartData: Array<{ date: string; revenue: number; orders: number }> = []
-    const today = new Date()
+    const todayDate = new Date()
     for (let i = 29; i >= 0; i--) {
-      const d = new Date(today)
+      const d = new Date(todayDate)
       d.setDate(d.getDate() - i)
       const year = d.getFullYear()
       const month = String(d.getMonth() + 1).padStart(2, '0')
@@ -157,26 +184,26 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       breakdown: {
-        revenueToday: breakdown?.revenueToday || 0,
-        revenueThisWeek: breakdown?.revenueThisWeek || 0,
-        revenueThisMonth: breakdown?.revenueThisMonth || 0,
-        revenueThisYear: breakdown?.revenueThisYear || 0,
-        ordersToday: breakdown?.ordersToday || 0,
-        ordersThisWeek: breakdown?.ordersThisWeek || 0,
-        ordersThisMonth: breakdown?.ordersThisMonth || 0,
-        ordersThisYear: breakdown?.ordersThisYear || 0,
+        revenueToday,
+        revenueThisWeek,
+        revenueThisMonth,
+        revenueThisYear,
+        ordersToday,
+        ordersThisWeek,
+        ordersThisMonth,
+        ordersThisYear,
       },
       filteredStats: {
-        totalOrders: stats?.totalOrders || 0,
-        totalRevenue: stats?.totalRevenue || 0,
-        pendingOrders: stats?.pendingOrders || 0,
-        completedOrders: stats?.completedOrders || 0,
-        directOrders: stats?.directOrders || 0,
-        onlineOrders: stats?.onlineOrders || 0,
+        totalOrders,
+        totalRevenue,
+        pendingOrders,
+        completedOrders,
+        directOrders,
+        onlineOrders,
       },
-      topProducts: topProducts || [],
-      recentOrders: recentOrders || [],
-      chartData: chartData || [],
+      topProducts,
+      recentOrders,
+      chartData,
     })
   } catch (error: any) {
     console.error('Error fetching admin reports stats:', error)
