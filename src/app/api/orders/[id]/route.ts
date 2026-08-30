@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { requireAuth, requireRole } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import { sendOrderStatusNotificationEmail } from '@/lib/mailer'
 
 export async function GET(
   request: NextRequest,
@@ -257,6 +258,19 @@ export async function PUT(
       if (order.voucher_code) {
         await db.prepare('UPDATE vouchers SET used_count = MAX(0, used_count - 1) WHERE code = ?').run(order.voucher_code)
       }
+    }
+
+    // Send email notification to buyer asynchronously
+    try {
+      const buyer = await db.prepare('SELECT email FROM users WHERE id = ?').get(order.user_id) as { email: string } | undefined
+      if (buyer?.email) {
+        const newStatus = body.status || order.status
+        const trackingNum = body.tracking_number !== undefined ? body.tracking_number : order.tracking_number
+        const courier = body.courier_name !== undefined ? body.courier_name : order.courier_name
+        sendOrderStatusNotificationEmail(buyer.email, orderId, newStatus, trackingNum, courier).catch(() => {})
+      }
+    } catch (mailErr) {
+      console.warn('Failed to send order status email:', mailErr)
     }
 
     return NextResponse.json({ success: true })

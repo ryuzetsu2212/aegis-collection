@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb, DbOrder, DbOrderItem } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import { sendOrderCreatedEmail } from '@/lib/mailer'
 
 export async function GET(request: NextRequest) {
   try {
@@ -341,6 +342,11 @@ export async function POST(request: NextRequest) {
       })
     } catch (auditErr) {
       console.warn('logAudit failed non-critically:', auditErr)
+    }
+
+    // Send email notification asynchronously in background
+    if (user?.email) {
+      sendOrderCreatedEmail(user.email, orderId, total_amount, shipping_address).catch(() => {})
     }
 
     return NextResponse.json({
