@@ -76,6 +76,7 @@ export default function CheckoutPage() {
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('online')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod')
   const [paymentProofUrl, setPaymentProofUrl] = useState<string | null>(null)
+  const [showProofPreview, setShowProofPreview] = useState(false)
   const [showMapsTutorial, setShowMapsTutorial] = useState(false)
 
   const [kecamatan, setKecamatan] = useState<string>('Kecamatan Bengkalis')
@@ -1039,20 +1040,38 @@ export default function CheckoutPage() {
                     </label>
                     {paymentProofUrl ? (
                       <div className="flex items-center gap-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                        <div className="w-16 h-16 relative rounded-md overflow-hidden border border-emerald-300 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setShowProofPreview(true)}
+                          className="w-16 h-16 relative rounded-md overflow-hidden border border-emerald-300 shrink-0 hover:opacity-80 transition-opacity cursor-zoom-in"
+                          title="Klik untuk melihat foto penuh"
+                        >
                           <Image src={paymentProofUrl} alt="Bukti Transfer" fill className="object-cover" unoptimized />
-                        </div>
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+                            <span className="text-white text-[9px] font-bold opacity-0 hover:opacity-100 bg-black/50 px-1 rounded">Lihat</span>
+                          </div>
+                        </button>
                         <div className="flex-1">
                           <p className="text-xs font-semibold text-emerald-800 flex items-center gap-1">
                             <CheckCircle2 className="h-4 w-4" /> Bukti Pembayaran Terunggah
                           </p>
-                          <button
-                            type="button"
-                            onClick={() => setPaymentProofUrl(null)}
-                            className="mt-1 text-[11px] text-red-600 underline font-medium"
-                          >
-                            Ganti Foto
-                          </button>
+                          <div className="flex items-center gap-3 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => setShowProofPreview(true)}
+                              className="text-[11px] text-blue-600 underline font-medium"
+                            >
+                              Lihat Foto
+                            </button>
+                            <span className="text-zinc-300">|</span>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentProofUrl(null)}
+                              className="text-[11px] text-red-600 underline font-medium"
+                            >
+                              Ganti Foto
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -1204,6 +1223,40 @@ export default function CheckoutPage() {
             </div>
           </form>
         </div>
+
+      {/* Modal Preview Bukti Pembayaran */}
+      {showProofPreview && paymentProofUrl && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowProofPreview(false)}
+        >
+          <div
+            className="relative max-w-lg w-full max-h-[90vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between w-full mb-3">
+              <p className="text-white text-sm font-semibold">Bukti Pembayaran</p>
+              <button
+                type="button"
+                onClick={() => setShowProofPreview(false)}
+                className="text-white bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-zinc-900">
+              <img
+                src={paymentProofUrl}
+                alt="Bukti Transfer Penuh"
+                className="w-full h-auto max-h-[75vh] object-contain"
+              />
+            </div>
+            <p className="text-zinc-400 text-[11px] mt-3">Ketuk di luar foto untuk menutup</p>
+          </div>
+        </div>
+      )}
 
       {/* Modal Tutorial Pin Point Google Maps */}
       {showMapsTutorial && (
