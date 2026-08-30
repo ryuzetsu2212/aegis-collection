@@ -48,15 +48,15 @@ export function ProductCard({ id, slug, title, price, imageUrl, category, rating
                 {category}
               </p>
             )}
-            {rating !== undefined && rating > 0 && (
+            {rating !== undefined ? (
               <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 shrink-0">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                <span>{Number(rating).toFixed(1)}</span>
-                {totalReviews !== undefined && (
-                  <span className="text-[10px] text-zinc-400 font-normal">({totalReviews})</span>
-                )}
+                <span>{rating > 0 ? Number(rating).toFixed(1) : '5.0'}</span>
+                <span className="text-[10px] text-zinc-400 font-normal">
+                  ({totalReviews ?? 0})
+                </span>
               </div>
-            )}
+            ) : null}
           </div>
           <h3 className="text-sm font-medium text-zinc-900 line-clamp-2">
             {title}

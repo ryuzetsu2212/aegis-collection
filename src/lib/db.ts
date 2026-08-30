@@ -269,6 +269,35 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       }))
     }
 
+    // 4c-3. reviews + users join (Product detail reviews query)
+    if (upper.includes('FROM REVIEWS') && upper.includes('JOIN USERS')) {
+      let query = supabase.from('reviews').select('*, users(full_name, email)')
+      let pIdx = 0
+
+      if (cleanSql.includes('r.product_id = ?') || cleanSql.includes('product_id = ?')) {
+        const prodId = params[pIdx++]
+        query = query.eq('product_id', prodId)
+      } else if (cleanSql.includes('r.order_id = ?') || cleanSql.includes('order_id = ?')) {
+        const ordId = params[pIdx++]
+        query = query.eq('order_id', ordId)
+        if (cleanSql.includes('r.user_id = ?') || cleanSql.includes('user_id = ?')) {
+          query = query.eq('user_id', params[pIdx++])
+        }
+      }
+
+      if (cleanSql.includes('ORDER BY r.created_at DESC') || cleanSql.includes('ORDER BY created_at DESC')) {
+        query = query.order('created_at', { ascending: false })
+      }
+
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+      return (data || []).map((row: any) => ({
+        ...row,
+        user_name: row.users?.full_name || 'Pembeli',
+        user_email: row.users?.email || '',
+      }))
+    }
+
     // 4d. products + categories query (Homepage & product listing)
     if (upper.includes('FROM PRODUCTS P')) {
       if (upper.includes('SELECT COUNT(*) AS TOTAL')) {
