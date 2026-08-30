@@ -6,7 +6,10 @@ function getMailTransporter() {
   const smtpPass = process.env.SMTP_PASS || resendApiKey || process.env.GMAIL_APP_PASSWORD
   const smtpHost = process.env.SMTP_HOST || (resendApiKey ? 'smtp.resend.com' : 'smtp.gmail.com')
   const smtpPort = Number(process.env.SMTP_PORT) || 465
-  const smtpFrom = process.env.SMTP_FROM || (resendApiKey ? '"Aegis Collection" <noreply@send.aegiscollection.biz.id>' : `"Aegis Collection" <${smtpUser}>`)
+  let smtpFrom = process.env.SMTP_FROM || (resendApiKey ? '"Aegis Collection" <noreply@send.aegiscollection.biz.id>' : `"Aegis Collection" <${smtpUser}>`)
+  if (smtpFrom.includes('resend.dev')) {
+    smtpFrom = '"Aegis Collection" <noreply@send.aegiscollection.biz.id>'
+  }
 
   if (!smtpUser || !smtpPass) {
     return null
