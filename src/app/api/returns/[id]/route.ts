@@ -30,7 +30,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Status retur tidak valid.' }, { status: 400 })
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE returns 
       SET status = ?, admin_notes = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?

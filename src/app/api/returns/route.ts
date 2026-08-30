@@ -12,23 +12,24 @@ export async function GET(request: NextRequest) {
 
     if (user.role === 'user') {
       // Calculate user's returns count in current 30 days
-      const quotaRow = db.prepare(`
+      const quotaRow = (await db.prepare(`
         SELECT COUNT(*) as count 
         FROM returns 
-        WHERE user_id = ? AND created_at >= datetime('now', '-30 days')
-      `).get(user.id) as { count: number }
+        WHERE user_id = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '30 days')
+      `).get(user.id)) as { count: number }
 
       const usedThisMonth = quotaRow?.count || 0
       const remainingQuota = Math.max(0, MONTHLY_RETURN_LIMIT - usedThisMonth)
 
       // Fetch user's return requests
-      const returns = db.prepare(`
+      const rawReturns = await db.prepare(`
         SELECT r.*, o.total_amount, o.status as order_status, o.created_at as order_date
         FROM returns r
         JOIN orders o ON r.order_id = o.id
         WHERE r.user_id = ?
         ORDER BY r.created_at DESC
       `).all(user.id)
+      const returns = Array.isArray(rawReturns) ? rawReturns : []
 
       return NextResponse.json({
         usedThisMonth,
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
       })
     } else {
       // Staff or Admin view: all returns with user & order info
-      const returns = db.prepare(`
+      const rawReturns = await db.prepare(`
         SELECT r.*, 
                o.total_amount, 
                o.status as order_status, 
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
         LEFT JOIN users u ON r.user_id = u.id
         ORDER BY r.created_at DESC
       `).all()
+      const returns = Array.isArray(rawReturns) ? rawReturns : []
 
       return NextResponse.json({
         returns,
@@ -81,9 +83,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Verify order exists & belongs to user
-    const order = db.prepare(`
+    const order = (await db.prepare(`
       SELECT * FROM orders WHERE id = ? AND user_id = ?
-    `).get(order_id, user.id) as any
+    `).get(order_id, user.id)) as any
 
     if (!order) {
       return NextResponse.json(
@@ -101,9 +103,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Verify order has NOT been rated / reviewed yet
-    const reviewCountRow = db.prepare(`
+    const reviewCountRow = (await db.prepare(`
       SELECT COUNT(*) as count FROM reviews WHERE order_id = ?
-    `).get(order_id) as { count: number }
+    `).get(order_id)) as { count: number }
 
     if (reviewCountRow && reviewCountRow.count > 0) {
       return NextResponse.json(
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Check if return request already exists for this order
-    const existingReturn = db.prepare(`
+    const existingReturn = await db.prepare(`
       SELECT id FROM returns WHERE order_id = ?
     `).get(order_id)
 
@@ -125,11 +127,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Check monthly limit (Max 3 returns per 30 days)
-    const quotaRow = db.prepare(`
+    const quotaRow = (await db.prepare(`
       SELECT COUNT(*) as count 
       FROM returns 
-      WHERE user_id = ? AND created_at >= datetime('now', '-30 days')
-    `).get(user.id) as { count: number }
+      WHERE user_id = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '30 days')
+    `).get(user.id)) as { count: number }
 
     const usedThisMonth = quotaRow?.count || 0
     if (usedThisMonth >= MONTHLY_RETURN_LIMIT) {
