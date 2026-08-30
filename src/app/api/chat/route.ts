@@ -246,9 +246,13 @@ export async function PUT(request: Request) {
       }
     }
 
+    const nowIso = new Date().toISOString()
     const { error: updateErr } = await supabase
       .from('chat_messages')
-      .update({ message: message.trim() })
+      .update({
+        message: message.trim(),
+        created_at: nowIso,
+      })
       .eq('id', id)
 
     if (updateErr) throw new Error(updateErr.message)

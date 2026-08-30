@@ -214,6 +214,7 @@ export default function StaffChatPage() {
     if (!editingText.trim() || isSavingEdit) return
     setIsSavingEdit(true)
     try {
+      const nowIso = new Date().toISOString()
       const res = await fetch('/api/chat', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -221,6 +222,11 @@ export default function StaffChatPage() {
       })
       if (res.ok) {
         setEditingMsgId(null)
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msgId ? { ...m, message: editingText.trim(), created_at: nowIso } : m
+          )
+        )
         if (selectedRoomId) fetchRoomMessages(selectedRoomId)
       } else {
         const data = await res.json()
