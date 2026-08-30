@@ -276,10 +276,21 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       }
 
       let query = supabase.from('products').select('*, categories(name, slug)')
+      let pIdx = 0
+
+      if (cleanSql.includes('p.id = ?')) {
+        const idVal = params[pIdx++]
+        query = query.eq('id', idVal)
+      }
+
+      if (cleanSql.includes('p.slug = ?')) {
+        const slugVal = params[pIdx++]
+        query = query.eq('slug', slugVal)
+      }
+
       if (cleanSql.includes('p.is_active = 1')) {
         query = query.eq('is_active', 1)
       }
-      let pIdx = 0
 
       if (cleanSql.includes('p.title LIKE ? OR p.description LIKE ?')) {
         const qVal = params[pIdx]
