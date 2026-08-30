@@ -44,7 +44,7 @@ export function ProductDetailClient({
   const safeRelatedProducts = Array.isArray(relatedProducts) ? relatedProducts : []
 
   const initialColor = variants.length > 0 ? variants[0].color : null
-  const initialSizes = variants.filter(v => v.size).map(v => v.size as string)
+  const initialSizes = variants.filter(v => v.size && v.stock > 0).map(v => v.size as string)
   const initialSize = initialSizes.length > 0 ? initialSizes[0] : null
 
   const [selectedSize, setSelectedSize] = useState<string | null>(initialSize)
@@ -94,7 +94,7 @@ export function ProductDetailClient({
   }
 
   const getAvailableSizes = () => {
-    return [...new Set(variants.filter(v => v.size).map(v => v.size!))]
+    return [...new Set(variants.filter(v => v.size && v.stock > 0).map(v => v.size!))]
   }
 
   const handleAddToCart = () => {
@@ -299,28 +299,20 @@ export function ProductDetailClient({
                       </label>
                     </div>
                     <div className="flex flex-wrap gap-2.5">
-                      {availableSizes.map((size) => {
-                        const isAvailable = variants
-                          .filter(v => v.size === size && (v.color === selectedColor || !selectedColor))
-                          .some(v => v.stock > 0)
-
-                        return (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => setSelectedSize(size)}
-                            disabled={!isAvailable}
-                            className={`min-w-[44px] h-11 px-3 text-sm font-medium rounded-xl border transition-all cursor-pointer
-                              ${selectedSize === size 
-                                ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm' 
-                                : 'bg-white text-zinc-800 border-zinc-200 hover:border-zinc-400'}
-                              ${!isAvailable ? 'line-through opacity-40 cursor-not-allowed' : ''}
-                            `}
-                          >
-                            {size}
-                          </button>
-                        )
-                      })}
+                      {availableSizes.map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => setSelectedSize(size)}
+                          className={`min-w-[44px] h-11 px-3 text-sm font-medium rounded-xl border transition-all cursor-pointer ${
+                            selectedSize === size
+                              ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
+                              : 'bg-white text-zinc-800 border-zinc-200 hover:border-zinc-400'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
