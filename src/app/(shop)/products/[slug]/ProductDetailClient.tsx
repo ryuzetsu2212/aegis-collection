@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store/useCartStore'
 import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
-import { Minus, Plus, ShoppingCart, Ruler, Sparkles, Star, MessageSquare, Zap } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, Ruler, Sparkles, Star, MessageSquare, Zap, Filter } from 'lucide-react'
 import { SizeChartModal } from '@/components/SizeChartModal'
 import { ProductCard } from '@/components/ProductCard'
 import { ReviewList } from '@/components/ReviewList'
@@ -56,6 +56,7 @@ export function ProductDetailClient({
   const [reviews, setReviews] = useState<any[]>([])
   const [totalReviews, setTotalReviews] = useState<number>(0)
   const [avgRating, setAvgRating] = useState<number>(5.0)
+  const [selectedStarFilter, setSelectedStarFilter] = useState<number | 'all'>('all')
 
   const addItem = useCartStore((state) => state.addItem)
 
@@ -479,7 +480,52 @@ export function ProductDetailClient({
             </div>
           </div>
 
-          <ReviewList reviews={reviews} />
+          {/* Rating Star Filter Bar */}
+          {reviews.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-6 bg-zinc-50 p-3.5 rounded-2xl border border-zinc-200/80">
+              <span className="text-xs font-bold text-zinc-700 mr-1 flex items-center gap-1">
+                <Filter className="h-3.5 w-3.5 text-zinc-500" /> Filter Rating:
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedStarFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  selectedStarFilter === 'all'
+                    ? 'bg-zinc-900 text-white shadow-xs'
+                    : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200'
+                }`}
+              >
+                Semua ({reviews.length})
+              </button>
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = reviews.filter((r) => Math.round(Number(r.rating)) === star).length
+                const isActive = selectedStarFilter === star
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setSelectedStarFilter(star)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                      isActive
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200'
+                    }`}
+                  >
+                    <Star className={`h-3.5 w-3.5 ${isActive ? 'fill-white text-white' : 'fill-amber-400 text-amber-400'}`} />
+                    <span>{star}</span>
+                    <span className={`text-[10px] ${isActive ? 'text-amber-100' : 'text-zinc-400'}`}>({count})</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <ReviewList
+            reviews={reviews.filter((r) => {
+              if (selectedStarFilter === 'all') return true
+              return Math.round(Number(r.rating)) === selectedStarFilter
+            })}
+          />
         </div>
 
         {/* Related Products Section */}
@@ -501,6 +547,8 @@ export function ProductDetailClient({
                   price={relProduct.price}
                   imageUrl={relProduct.image_url}
                   category={relProduct.category_name || undefined}
+                  rating={relProduct.average_rating}
+                  totalReviews={relProduct.total_reviews}
                 />
               ))}
             </div>

@@ -358,18 +358,22 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       const { data, error } = await query
       if (error) throw new Error(error.message)
 
-      const { data: revs } = await supabase.from('reviews').select('product_id, rating')
+      const { data: revs } = await supabase.from('reviews').select('product_id, rating').range(0, 5000)
       const ratingMap: Record<number, { sum: number; count: number }> = {}
       if (revs) {
         revs.forEach((r: any) => {
-          if (!ratingMap[r.product_id]) ratingMap[r.product_id] = { sum: 0, count: 0 }
-          ratingMap[r.product_id].sum += Number(r.rating) || 0
-          ratingMap[r.product_id].count += 1
+          const pid = Number(r.product_id)
+          if (!isNaN(pid) && pid > 0) {
+            if (!ratingMap[pid]) ratingMap[pid] = { sum: 0, count: 0 }
+            ratingMap[pid].sum += Number(r.rating) || 0
+            ratingMap[pid].count += 1
+          }
         })
       }
 
       return (data || []).map((p: any) => {
-        const stats = ratingMap[p.id] || { sum: 0, count: 0 }
+        const pid = Number(p.id)
+        const stats = ratingMap[pid] || { sum: 0, count: 0 }
         return {
           ...p,
           id: p.id,
@@ -380,7 +384,7 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
           is_active: p.is_active ?? 1,
           category_name: p.categories?.name || null,
           category_slug: p.categories?.slug || null,
-          average_rating: stats.count > 0 ? Math.round((stats.sum / stats.count) * 10) / 10 : 0,
+          average_rating: stats.count > 0 ? Number((stats.sum / stats.count).toFixed(1)) : 0,
           total_reviews: stats.count
         }
       })
