@@ -345,9 +345,11 @@ export default function ChatPage() {
                 <h1 className="font-bold text-sm sm:text-base text-white leading-tight flex items-center gap-2">
                   {isCourier
                     ? 'Pusat Chat Kurir (ke Staf & Admin)'
+                    : user?.role === 'admin'
+                    ? 'Pusat Chat Admin Toko (Internal Staf & Kurir)'
                     : isStaffOrAdmin
-                    ? 'Pusat Chat Admin Toko (Internal Staf)'
-                    : 'Aegis Customer Service'}
+                    ? 'Pusat Chat Staf Toko'
+                    : 'Pusat Chat CS (Ke Staf Toko)'}
                   <Sparkles className="h-4 w-4 text-amber-400 fill-amber-400 shrink-0" />
                 </h1>
                 <p className="text-xs text-zinc-400 mt-0.5">
@@ -355,7 +357,7 @@ export default function ChatPage() {
                     ? 'Pilih Staf atau Admin toko dari dropdown di bawah untuk mengobrol'
                     : isStaffOrAdmin
                     ? 'Kelola dan jawab pesan kurir atau staf internal'
-                    : 'Pilih Staf toko dari dropdown di bawah untuk mulai berkonsultasi'}
+                    : 'Pilih Staf Toko dari dropdown di bawah untuk mulai berkonsultasi'}
                 </p>
               </div>
             </div>
