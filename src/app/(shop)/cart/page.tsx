@@ -19,6 +19,17 @@ export default function CartPage() {
 
   useEffect(() => {
     setMounted(true)
+
+    // Filter out invalid/corrupted items from previous browser sessions (e.g. missing product title, missing ID, or price 0)
+    const validItems = items.filter((i) => i && i.productTitle && i.productId && Number(i.price) > 0)
+    if (validItems.length !== items.length) {
+      if (validItems.length === 0) {
+        clearCart()
+      } else {
+        useCartStore.setState({ items: validItems })
+      }
+    }
+
     fetch('/api/auth/me')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -27,7 +38,7 @@ export default function CartPage() {
         }
       })
       .catch(() => {})
-  }, [])
+  }, [items, clearCart])
 
   const isRestricted = userRole === 'admin' || userRole === 'staff'
 

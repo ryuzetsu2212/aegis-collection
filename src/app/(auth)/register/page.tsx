@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Mail, KeyRound, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { useCartStore } from '@/lib/store/useCartStore'
 
 export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1)
@@ -135,6 +136,7 @@ export default function RegisterPage() {
         return
       }
 
+      useCartStore.getState().clearCart()
       window.location.assign('/')
     } catch (err) {
       setError('Terjadi kesalahan. Silakan coba lagi.')
