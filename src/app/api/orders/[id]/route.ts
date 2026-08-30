@@ -17,7 +17,7 @@ export async function GET(
     }
 
     const db = await getDb()
-    const order = db.prepare(`
+    const order = (await db.prepare(`
       SELECT 
         o.id,
         o.user_id,
@@ -48,7 +48,7 @@ export async function GET(
       LEFT JOIN users u ON o.user_id = u.id
       LEFT JOIN returns r ON r.order_id = o.id
       WHERE o.id = ?
-    `).get(orderId) as any
+    `).get(orderId)) as any
 
     if (!order) {
       return NextResponse.json({ error: 'Pesanan tidak ditemukan.' }, { status: 404 })
@@ -58,7 +58,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const items = db.prepare(`
+    const items = (await db.prepare(`
       SELECT oi.*, pv.product_id, pv.size, pv.color, pr.title as product_title, pr.slug as product_slug, pr.image_url,
         r.rating as review_rating, r.comment as review_comment
       FROM order_items oi
@@ -66,7 +66,7 @@ export async function GET(
       JOIN products pr ON pv.product_id = pr.id
       LEFT JOIN reviews r ON r.order_id = oi.order_id AND r.product_id = pv.product_id AND r.user_id = ?
       WHERE oi.order_id = ?
-    `).all(order.user_id, orderId) as any[]
+    `).all(order.user_id, orderId)) as any[]
 
     return NextResponse.json({
       ...order,

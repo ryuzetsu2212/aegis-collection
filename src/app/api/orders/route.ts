@@ -166,12 +166,12 @@ export async function POST(request: NextRequest) {
 
       if (!isNaN(variantId) && variantId > 0 && !isProductPrefix) {
         // Attempt 1: match product_variants.id directly
-        variant = db.prepare(`
+        variant = (await db.prepare(`
           SELECT pv.id, pv.stock, p.price
           FROM product_variants pv
           JOIN products p ON pv.product_id = p.id
           WHERE pv.id = ? AND p.is_active = 1
-        `).get(variantId) as { id: number; stock: number; price: number } | undefined
+        `).get(variantId)) as { id: number; stock: number; price: number } | undefined
       }
 
       // Attempt 2: fallback to product_id match if variantId is invalid, not found, or has p- prefix
@@ -179,14 +179,14 @@ export async function POST(request: NextRequest) {
         const rawProdId = String(item.productId || item.product_id || rawId)
         const prodId = parseInt(rawProdId.replace(/\D/g, ''), 10)
         if (!isNaN(prodId) && prodId > 0) {
-          variant = db.prepare(`
+          variant = (await db.prepare(`
             SELECT pv.id, pv.stock, p.price
             FROM product_variants pv
             JOIN products p ON pv.product_id = p.id
             WHERE p.id = ? AND p.is_active = 1
             ORDER BY pv.stock DESC
             LIMIT 1
-          `).get(prodId) as { id: number; stock: number; price: number } | undefined
+          `).get(prodId)) as { id: number; stock: number; price: number } | undefined
         }
       }
 
@@ -219,9 +219,9 @@ export async function POST(request: NextRequest) {
     // === SERVER-SIDE VOUCHER VALIDATION ===
     let validDiscount = 0
     if (voucher_code) {
-      const voucher = db.prepare(
+      const voucher = (await db.prepare(
         'SELECT * FROM vouchers WHERE code = ? AND is_active = 1'
-      ).get(String(voucher_code).trim().toUpperCase()) as any
+      ).get(String(voucher_code).trim().toUpperCase())) as any
 
       if (voucher) {
         const notExpired = !voucher.expires_at || new Date(voucher.expires_at) >= new Date()
@@ -290,7 +290,7 @@ export async function POST(request: NextRequest) {
       initialPaymentStatus = 'pending_confirmation'
     }
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO orders (user_id, total_amount, shipping_address, purchase_type, payment_method, payment_proof_url, payment_status, status, voucher_code, discount_amount, shipping_cost)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
@@ -313,16 +313,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const orderId = result.lastInsertRowid as number
-
-    const insertItem = db.prepare(`
-      INSERT INTO order_items (order_id, variant_id, quantity, price_at_purchase)
-      VALUES (?, ?, ?, ?)
-    `)
+    const orderId = Number(result.lastInsertRowid)
 
     for (const item of validatedItems) {
-      insertItem.run(orderId, item.variantId, item.quantity, item.price)
-      db.prepare(`
+      await db.prepare(`
+        INSERT INTO order_items (order_id, variant_id, quantity, price_at_purchase)
+        VALUES (?, ?, ?, ?)
+      `).run(orderId, item.variantId, item.quantity, item.price)
+
+      await db.prepare(`
         UPDATE product_variants SET stock = MAX(0, stock - ?) WHERE id = ?
       `).run(item.quantity, item.variantId)
     }
