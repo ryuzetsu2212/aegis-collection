@@ -415,12 +415,12 @@ export default function StaffChatPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   {/* Emoji Button */}
                   <button
                     type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="p-2 text-zinc-500 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors cursor-pointer shrink-0"
+                    className="p-1.5 sm:p-2 text-zinc-500 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors cursor-pointer shrink-0"
                     title="Sisipkan Emoji"
                   >
                     <Smile className="h-5 w-5" />
@@ -428,7 +428,7 @@ export default function StaffChatPage() {
 
                   {/* Image Attachment Button */}
                   <label
-                    className={`p-2 text-zinc-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                    className={`p-1.5 sm:p-2 text-zinc-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                       isUploadingImage ? 'opacity-50 cursor-wait' : ''
                     }`}
                     title="Kirim Gambar"
@@ -452,15 +452,22 @@ export default function StaffChatPage() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={isCourier ? 'Tulis pesan koordinasi...' : 'Tulis pesan...'}
-                    className="flex-1 bg-zinc-100 border border-zinc-200 rounded-full px-4 py-2 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                    className="flex-1 min-w-0 bg-zinc-100 border border-zinc-200 rounded-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 truncate"
                   />
                   <button
                     type="submit"
                     disabled={loading || !input.trim()}
-                    className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white px-4 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white p-2.5 sm:px-4 sm:py-2.5 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                    title="Kirim Pesan"
                   >
-                    <Send className="h-3.5 w-3.5" />
-                    Kirim
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span className="hidden sm:inline text-xs font-bold">Kirim</span>
+                        <Send className="h-4 w-4" />
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
