@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
 import { requireRole } from '@/lib/auth'
+import { createClient } from '@supabase/supabase-js'
 
 const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads')
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
@@ -15,6 +16,13 @@ const MAGIC_BYTES: Record<string, Buffer> = {
   'png': Buffer.from([0x89, 0x50, 0x4E, 0x47]),
   'gif': Buffer.from([0x47, 0x49, 0x46, 0x38]),
   'webp': Buffer.from([0x52, 0x49, 0x46, 0x46]),
+}
+
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return null
+  return createClient(url, key, { auth: { persistSession: false } })
 }
 
 export async function POST(request: NextRequest) {
@@ -71,16 +79,45 @@ export async function POST(request: NextRequest) {
 
     // Use safe filename with whitelisted extension
     const fileName = `items/${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`
-    const fullPath = join(UPLOAD_DIR, fileName)
+    let url: string | null = null
 
-    let url = `/uploads/${fileName}`
+    // 1. Attempt upload to Supabase Storage Bucket ('uploads')
+    const supabase = getSupabaseClient()
+    if (supabase) {
+      try {
+        await supabase.storage.createBucket('uploads', { public: true }).catch(() => {})
 
-    try {
-      await mkdir(join(UPLOAD_DIR, 'items'), { recursive: true })
-      await writeFile(fullPath, buffer)
-    } catch (fsErr) {
-      console.warn('FileSystem write failed or read-only (Vercel serverless environment). Using Data URI fallback:', fsErr)
-      url = `data:${file.type};base64,${buffer.toString('base64')}`
+        const { data, error } = await supabase.storage
+          .from('uploads')
+          .upload(fileName, buffer, {
+            contentType: file.type,
+            upsert: true,
+          })
+
+        if (!error && data) {
+          const { data: publicUrlData } = supabase.storage.from('uploads').getPublicUrl(fileName)
+          if (publicUrlData?.publicUrl) {
+            url = publicUrlData.publicUrl
+          }
+        } else if (error) {
+          console.warn('Supabase storage upload warning:', error.message)
+        }
+      } catch (sbErr) {
+        console.warn('Supabase storage exception:', sbErr)
+      }
+    }
+
+    // 2. If Supabase Storage wasn't used or failed, attempt local filesystem write or Data URI fallback
+    if (!url) {
+      try {
+        const fullPath = join(UPLOAD_DIR, fileName)
+        await mkdir(join(UPLOAD_DIR, 'items'), { recursive: true })
+        await writeFile(fullPath, buffer)
+        url = `/uploads/${fileName}`
+      } catch (fsErr) {
+        console.warn('FileSystem write failed or read-only (Vercel serverless). Using Data URI fallback:', fsErr)
+        url = `data:${file.type};base64,${buffer.toString('base64')}`
+      }
     }
 
     return NextResponse.json({ url })

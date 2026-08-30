@@ -27,7 +27,7 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
     cleanSql += ' RETURNING id'
   }
 
-  // Safely interpolate parameters into cleanSql to avoid PostgreSQL type mismatches in PL/pgSQL
+  // Safely interpolate parameters into cleanSql using PostgreSQL dollar-quoting for strings
   if (params && params.length > 0) {
     let pIdx = 0
     cleanSql = cleanSql.replace(/\?/g, () => {
@@ -35,7 +35,9 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       if (p === null || p === undefined) return 'NULL'
       if (typeof p === 'number') return String(p)
       if (typeof p === 'boolean') return p ? '1' : '0'
-      return "'" + String(p).replace(/'/g, "''") + "'"
+      const strP = String(p)
+      const tag = 'T_' + Math.random().toString(36).slice(2, 7)
+      return '$' + tag + '$' + strP + '$' + tag + '$'
     })
   }
 
