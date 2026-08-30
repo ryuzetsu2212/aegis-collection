@@ -167,6 +167,7 @@ export async function POST(request: NextRequest) {
         alasan: reason.trim(),
         detail: details ? details.trim() : null,
       },
+      req: request,
     })
 
     return NextResponse.json(

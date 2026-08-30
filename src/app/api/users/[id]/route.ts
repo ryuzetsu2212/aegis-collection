@@ -44,6 +44,7 @@ export async function PUT(
         role_sebelumnya: targetUser.role,
         role_baru: role,
       },
+      req: request,
     })
 
     return NextResponse.json({ success: true })
@@ -95,6 +96,7 @@ export async function DELETE(
         email: targetUser.email,
         role: targetUser.role,
       },
+      req: request,
     })
 
     return NextResponse.json({ success: true, message: 'Pengguna berhasil dihapus.' })

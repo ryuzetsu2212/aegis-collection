@@ -247,6 +247,7 @@ export async function PUT(
         telepon_kurir: body.courier_phone !== undefined ? body.courier_phone : order.courier_phone,
         resi: body.tracking_number !== undefined ? body.tracking_number : order.tracking_number,
       },
+      req: request,
     })
 
     // Restore stock & voucher if order status changed to cancelled from non-cancelled

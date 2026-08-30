@@ -339,6 +339,7 @@ export async function POST(request: NextRequest) {
           metode_pembayaran: payment_method,
           status: initialStatus,
         },
+        req: request,
       })
     } catch (auditErr) {
       console.warn('logAudit failed non-critically:', auditErr)

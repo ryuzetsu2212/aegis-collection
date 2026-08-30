@@ -8,6 +8,26 @@ export interface LogAuditOptions {
   entityId?: number | null
   details?: Record<string, any> | string | null
   ipAddress?: string | null
+  req?: Request | null
+}
+
+export function extractClientIp(req?: Request | null, overrideIp?: string | null): string {
+  if (overrideIp && overrideIp !== '127.0.0.1') return overrideIp
+
+  if (req) {
+    const xForwardedFor = req.headers.get('x-forwarded-for')
+    if (xForwardedFor) {
+      const firstIp = xForwardedFor.split(',')[0].trim()
+      if (firstIp) return firstIp
+    }
+    const cfIp = req.headers.get('cf-connecting-ip')
+    if (cfIp) return cfIp.trim()
+
+    const xRealIp = req.headers.get('x-real-ip')
+    if (xRealIp) return xRealIp.trim()
+  }
+
+  return overrideIp || '127.0.0.1'
 }
 
 export async function logAudit({
@@ -16,10 +36,12 @@ export async function logAudit({
   entityType,
   entityId,
   details,
-  ipAddress = '127.0.0.1',
+  ipAddress,
+  req,
 }: LogAuditOptions) {
   try {
     const db = await getDb()
+    const finalIp = extractClientIp(req, ipAddress)
 
     const detailsStr =
       typeof details === 'object' && details !== null
@@ -37,10 +59,9 @@ export async function logAudit({
       entityType || null,
       entityId || null,
       detailsStr,
-      ipAddress
+      finalIp
     )
   } catch (err) {
     console.error('[logAudit Error]', err)
   }
 }
-
