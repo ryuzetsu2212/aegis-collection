@@ -29,6 +29,7 @@ interface Product {
   image_url: string
   category_name: string | null
   product_variants: ProductVariant[]
+  total_sold?: number
 }
 
 export function ProductDetailClient({
@@ -274,6 +275,14 @@ export function ProductDetailClient({
 
               {/* Rating Summary Header */}
               <div className="flex items-center gap-2 mt-2">
+                {product.total_sold !== undefined && (
+                  <>
+                    <span className="text-xs font-bold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded">
+                      {product.total_sold} Terjual
+                    </span>
+                    <span className="text-xs text-zinc-300">•</span>
+                  </>
+                )}
                 <div className="flex items-center text-amber-500 font-bold text-sm">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-1" />
                   <span>{avgRating > 0 ? avgRating : '5.0'}</span>
@@ -339,7 +348,7 @@ export function ProductDetailClient({
                 )}
 
                 {/* Color Selector */}
-                {availableColors.length > 0 && (
+                {availableColors.length > 1 && (
                   <div>
                     <div className="mb-3">
                       <label className="text-sm font-semibold text-zinc-900">

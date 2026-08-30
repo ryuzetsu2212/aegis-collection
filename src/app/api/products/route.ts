@@ -20,7 +20,13 @@ export async function GET(request: NextRequest) {
         c.name as category_name,
         c.slug as category_slug,
         COALESCE((SELECT AVG(rating) FROM reviews WHERE product_id = p.id), 0) as average_rating,
-        COALESCE((SELECT COUNT(*) FROM reviews WHERE product_id = p.id), 0) as total_reviews
+        COALESCE((SELECT COUNT(*) FROM reviews WHERE product_id = p.id), 0) as total_reviews,
+        COALESCE((
+          SELECT SUM(oi.quantity)
+          FROM order_items oi
+          JOIN product_variants pv ON oi.variant_id = pv.id
+          WHERE pv.product_id = p.id
+        ), 0) as total_sold
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
     `

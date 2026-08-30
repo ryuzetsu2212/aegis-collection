@@ -89,7 +89,13 @@ export default async function HomePage({
       c.name as category_name,
       c.slug as category_slug,
       COALESCE((SELECT AVG(rating) FROM reviews WHERE product_id = p.id), 0) as average_rating,
-      COALESCE((SELECT COUNT(*) FROM reviews WHERE product_id = p.id), 0) as total_reviews
+      COALESCE((SELECT COUNT(*) FROM reviews WHERE product_id = p.id), 0) as total_reviews,
+      COALESCE((
+        SELECT SUM(oi.quantity)
+        FROM order_items oi
+        JOIN product_variants pv ON oi.variant_id = pv.id
+        WHERE pv.product_id = p.id
+      ), 0) as total_sold
   ` + baseWhere
 
   // Order by sorting option
