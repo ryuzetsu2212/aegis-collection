@@ -84,8 +84,7 @@ export function ProductDetailClient({
 
   const getProductVariants = () => {
     return variants.filter(v => 
-      (!selectedSize || v.size === selectedSize) &&
-      (!selectedColor || v.color === selectedColor)
+      !selectedSize || v.size === selectedSize
     )
   }
 
@@ -94,27 +93,12 @@ export function ProductDetailClient({
     return matchedVariants.reduce((sum, v) => sum + v.stock, 0)
   }
 
-  const getAvailableColors = () => {
-    const matchedVariants = selectedSize 
-      ? variants.filter(v => v.size === selectedSize)
-      : variants
-    return [...new Set(matchedVariants.map(v => v.color))]
-  }
-
   const getAvailableSizes = () => {
-    const matchedVariants = selectedColor
-      ? variants.filter(v => v.color === selectedColor)
-      : variants
-    return [...new Set(matchedVariants.filter(v => v.size).map(v => v.size!))]
+    return [...new Set(variants.filter(v => v.size).map(v => v.size!))]
   }
 
   const handleAddToCart = () => {
     setError(null)
-
-    if (!selectedColor && availableColors.length > 0) {
-      setError('Pilih warna terlebih dahulu')
-      return
-    }
 
     const matchedVariants = getProductVariants()
     if (matchedVariants.length === 0) {
@@ -137,7 +121,7 @@ export function ProductDetailClient({
       productSlug: product.slug,
       imageUrl: product.image_url,
       size: selectedSize,
-      color: selectedColor || variant.color || 'Default',
+      color: variant.color || 'Default',
       price: discountedPrice,
     }, quantity)
 
@@ -147,11 +131,6 @@ export function ProductDetailClient({
 
   const handleDirectCheckout = () => {
     setError(null)
-
-    if (!selectedColor && availableColors.length > 0) {
-      setError('Pilih warna terlebih dahulu')
-      return
-    }
 
     const matchedVariants = getProductVariants()
     if (matchedVariants.length === 0) {
@@ -174,7 +153,7 @@ export function ProductDetailClient({
       productSlug: product.slug,
       imageUrl: product.image_url,
       size: selectedSize,
-      color: selectedColor || variant.color || 'Default',
+      color: variant.color || 'Default',
       price: discountedPrice,
       quantity: quantity,
     }
@@ -187,7 +166,6 @@ export function ProductDetailClient({
   }
 
   const availableStock = getAvailableStock()
-  const availableColors = getAvailableColors()
   const availableSizes = getAvailableSizes()
   const discountedPrice = product.price * 0.5
 
@@ -340,42 +318,6 @@ export function ProductDetailClient({
                             `}
                           >
                             {size}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Color Selector */}
-                {availableColors.length > 1 && (
-                  <div>
-                    <div className="mb-3">
-                      <label className="text-sm font-semibold text-zinc-900">
-                        Warna
-                      </label>
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
-                      {availableColors.map((color) => {
-                        const isAvailable = variants
-                          .filter(v => v.color === color && (v.size === selectedSize || !selectedSize))
-                          .some(v => v.stock > 0)
-                        const isSelected = selectedColor === color
-
-                        return (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => isAvailable && setSelectedColor(color)}
-                            disabled={!isAvailable}
-                            className={`min-w-[44px] h-11 px-4 text-sm font-medium rounded-xl border transition-all cursor-pointer flex items-center justify-center
-                              ${isSelected 
-                                ? 'bg-zinc-900 text-white border-zinc-900 shadow-sm' 
-                                : 'bg-white text-zinc-800 border-zinc-200 hover:border-zinc-400'}
-                              ${!isAvailable ? 'line-through opacity-40 cursor-not-allowed' : ''}
-                            `}
-                          >
-                            {color}
                           </button>
                         )
                       })}
