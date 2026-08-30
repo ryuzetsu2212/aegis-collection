@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { MessageSquare, Send, RefreshCw, ShieldCheck, Smile, ImagePlus, Loader2, X, Users, Truck } from 'lucide-react'
+import { MessageSquare, Send, RefreshCw, ShieldCheck, Smile, ImagePlus, Loader2, X, Users, Truck, Pencil, Trash2, Check } from 'lucide-react'
 import { formatChatTime } from '@/lib/formatDate'
 import { compressImageIfNeeded } from '@/lib/imageCompressor'
 
@@ -34,6 +34,8 @@ const EMOJI_LIST = [
   '🤔', '🥳', '🙌', '👏', '🤝', '💪', '👌', '✌️'
 ]
 
+const MAX_EDIT_AGE_MS = 12 * 60 * 60 * 1000 // 12 Hours
+
 export default function StaffChatPage() {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [rooms, setRooms] = useState<Room[]>([])
@@ -46,6 +48,12 @@ export default function StaffChatPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null)
+
+  // Edit message state
+  const [editingMsgId, setEditingMsgId] = useState<number | null>(null)
+  const [editingText, setEditingText] = useState('')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
+
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -188,6 +196,53 @@ export default function StaffChatPage() {
     } finally {
       setIsUploadingImage(false)
       if (e.target) e.target.value = ''
+    }
+  }
+
+  // Handle Edit Message
+  const handleStartEdit = (msg: Message) => {
+    setEditingMsgId(msg.id)
+    setEditingText(msg.message)
+  }
+
+  const handleSaveEdit = async (msgId: number) => {
+    if (!editingText.trim() || isSavingEdit) return
+    setIsSavingEdit(true)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: msgId, message: editingText.trim() }),
+      })
+      if (res.ok) {
+        setEditingMsgId(null)
+        if (selectedRoomId) fetchRoomMessages(selectedRoomId)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Gagal mengedit pesan.')
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat mengedit pesan.')
+    } finally {
+      setIsSavingEdit(false)
+    }
+  }
+
+  // Handle Delete Message
+  const handleDeleteMessage = async (msgId: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus pesan ini?')) return
+    try {
+      const res = await fetch(`/api/chat?id=${msgId}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        if (selectedRoomId) fetchRoomMessages(selectedRoomId)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Gagal menghapus pesan.')
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat menghapus pesan.')
     }
   }
 
@@ -349,34 +404,96 @@ export default function StaffChatPage() {
                     const isImageMsg = msg.message.startsWith('[IMAGE]')
                     const imgUrl = isImageMsg ? msg.message.replace('[IMAGE]', '') : ''
 
+                    // Check 12 hours limit for edit/delete
+                    const ageMs = Date.now() - new Date(msg.created_at).getTime()
+                    const canModify = isMe && ageMs <= MAX_EDIT_AGE_MS
+                    const isEditing = editingMsgId === msg.id
+
                     return (
                       <div
                         key={msg.id}
-                        className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                        className={`flex flex-col group ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div className="flex items-center gap-1.5 mb-1 text-[10px] text-zinc-400 font-medium px-1">
                           <span>{isMe ? 'Anda' : (msg.sender_name || 'Pengguna')}</span>
                           <span>•</span>
                           <span>{formatChatTime(msg.created_at)}</span>
                         </div>
-                        <div
-                          className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-2.5 text-xs leading-relaxed shadow-xs ${
-                            isMe
-                              ? 'bg-zinc-900 text-white rounded-br-none'
-                              : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-none'
-                          }`}
-                        >
-                          {isImageMsg ? (
-                            <div className="overflow-hidden rounded-xl bg-zinc-100 cursor-pointer group">
-                              <img
-                                src={imgUrl}
-                                alt="Gambar Chat"
-                                className="max-h-[240px] w-full object-cover group-hover:scale-102 transition-transform duration-200 rounded-xl"
-                                onClick={() => setSelectedImageModal(imgUrl)}
+
+                        <div className="flex items-center gap-1 max-w-[85%] sm:max-w-[75%]">
+                          {/* Left-side action buttons for sent messages */}
+                          {canModify && !isEditing && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+                              {!isImageMsg && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(msg)}
+                                  className="p-1 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                                  title="Edit Pesan (Batas 12 Jam)"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                title="Hapus Pesan (Batas 12 Jam)"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Message Bubble / Inline Edit Form */}
+                          {isEditing ? (
+                            <div className="bg-white border border-amber-300 rounded-2xl p-2.5 shadow-md flex-1 flex flex-col gap-2">
+                              <input
+                                type="text"
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                className="w-full text-xs text-zinc-900 border border-zinc-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500"
                               />
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingMsgId(null)}
+                                  className="px-2 py-1 text-[11px] font-semibold text-zinc-600 hover:bg-zinc-100 rounded-md cursor-pointer"
+                                >
+                                  Batal
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveEdit(msg.id)}
+                                  disabled={isSavingEdit || !editingText.trim()}
+                                  className="px-2.5 py-1 text-[11px] font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-md cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                                >
+                                  {isSavingEdit ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                                  Simpan
+                                </button>
+                              </div>
                             </div>
                           ) : (
-                            <div className="px-1.5 py-0.5">{msg.message}</div>
+                            <div
+                              className={`rounded-2xl p-2.5 text-xs sm:text-sm font-normal leading-relaxed shadow-xs ${
+                                isMe
+                                  ? 'bg-zinc-900 text-white rounded-br-none'
+                                  : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-none'
+                              }`}
+                            >
+                              {isImageMsg ? (
+                                <div className="overflow-hidden rounded-xl bg-zinc-100 cursor-pointer group/img">
+                                  <img
+                                    src={imgUrl}
+                                    alt="Gambar Chat"
+                                    className="max-h-[240px] w-full object-cover group-hover/img:scale-102 transition-transform duration-200 rounded-xl"
+                                    onClick={() => setSelectedImageModal(imgUrl)}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="px-1.5 py-0.5">{msg.message}</div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -385,8 +502,8 @@ export default function StaffChatPage() {
                 )}
               </div>
 
-              {/* Reply Form */}
-              <form onSubmit={handleSendMessage} className="p-3 border-t border-zinc-200 bg-white flex flex-col gap-2 relative">
+              {/* Chat Input Bar */}
+              <form onSubmit={handleSendMessage} className="p-3 sm:p-4 bg-white border-t border-zinc-200 flex flex-col gap-2 shrink-0 relative">
                 {/* Quick Emoji Picker */}
                 {showEmojiPicker && (
                   <div className="bg-white border border-zinc-200 rounded-2xl p-3 shadow-xl max-h-48 overflow-y-auto space-y-2 mb-1 animate-in fade-in slide-in-from-bottom-2 duration-150">

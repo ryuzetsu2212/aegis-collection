@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { MessageSquare, Send, Bot, Sparkles, User, ArrowLeft, Loader2, Smile, ImagePlus, X, RefreshCw, Users, ShieldCheck, Truck } from 'lucide-react'
+import { MessageSquare, Send, Bot, Sparkles, User, ArrowLeft, Loader2, Smile, ImagePlus, X, RefreshCw, Users, ShieldCheck, Truck, Pencil, Trash2, Check, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatChatTime } from '@/lib/formatDate'
 import { compressImageIfNeeded } from '@/lib/imageCompressor'
@@ -36,6 +36,8 @@ const EMOJI_LIST = [
   '🤔', '🥳', '🙌', '👏', '🤝', '💪', '👌', '✌️'
 ]
 
+const MAX_EDIT_AGE_MS = 12 * 60 * 60 * 1000 // 12 Hours
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -46,11 +48,16 @@ export default function ChatPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [selectedImageModal, setSelectedImageModal] = useState<string | null>(null)
 
-  // Multi-room (Dropdown selection) state for Courier, Staff & Admin
+  // Multi-room (Dropdown selection) state for ALL roles (User, Courier, Staff, Admin)
   const [rooms, setRooms] = useState<Room[]>([])
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
   const [roomUser, setRoomUser] = useState<any>(null)
   const [isRefreshingRooms, setIsRefreshingRooms] = useState(false)
+
+  // Edit message state
+  const [editingMsgId, setEditingMsgId] = useState<number | null>(null)
+  const [editingText, setEditingText] = useState('')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -71,9 +78,9 @@ export default function ChatPage() {
     checkAuth()
   }, [])
 
-  // Fetch Rooms for Courier, Staff & Admin
+  // Fetch Rooms for all logged in users
   const fetchRooms = async () => {
-    if (!user || user.role === 'user') return
+    if (!user) return
     try {
       const res = await fetch('/api/chat')
       if (res.ok) {
@@ -91,7 +98,7 @@ export default function ChatPage() {
     }
   }
 
-  // Fetch Room Messages when a specific room is selected (Courier, Staff, Admin)
+  // Fetch Room Messages when a specific room is selected
   const fetchRoomMessages = async (roomId: number) => {
     try {
       const res = await fetch(`/api/chat?room_user_id=${roomId}`)
@@ -105,38 +112,18 @@ export default function ChatPage() {
     }
   }
 
-  // Fetch Messages for regular Customer (Pembeli)
-  const fetchCustomerMessages = async () => {
-    if (!user || user.role !== 'user') return
-    try {
-      const res = await fetch('/api/chat?mark_read=1')
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(data.messages || [])
-      }
-    } catch (err) {
-      console.error('Failed to fetch customer messages', err)
-    }
-  }
-
   useEffect(() => {
     if (!user) return
-    if (user.role === 'user') {
-      fetchCustomerMessages()
-      const interval = setInterval(fetchCustomerMessages, 2000)
-      return () => clearInterval(interval)
-    } else {
+    fetchRooms()
+    const interval = setInterval(() => {
       fetchRooms()
-      const interval = setInterval(() => {
-        fetchRooms()
-        if (selectedRoomId) fetchRoomMessages(selectedRoomId)
-      }, 2000)
-      return () => clearInterval(interval)
-    }
+      if (selectedRoomId) fetchRoomMessages(selectedRoomId)
+    }, 2000)
+    return () => clearInterval(interval)
   }, [user, selectedRoomId])
 
   useEffect(() => {
-    if (user && user.role !== 'user' && selectedRoomId) {
+    if (user && selectedRoomId) {
       fetchRoomMessages(selectedRoomId)
     }
   }, [selectedRoomId])
@@ -165,7 +152,7 @@ export default function ChatPage() {
 
     try {
       const bodyPayload: any = { message: text }
-      if (user.role !== 'user' && selectedRoomId) {
+      if (selectedRoomId) {
         bodyPayload.room_user_id = selectedRoomId
       }
 
@@ -176,9 +163,7 @@ export default function ChatPage() {
       })
 
       if (res.ok) {
-        if (user.role === 'user') {
-          fetchCustomerMessages()
-        } else if (selectedRoomId) {
+        if (selectedRoomId) {
           fetchRoomMessages(selectedRoomId)
           fetchRooms()
         }
@@ -208,7 +193,7 @@ export default function ChatPage() {
       if (uploadRes.ok) {
         const { url } = await uploadRes.json()
         const bodyPayload: any = { message: `[IMAGE]${url}` }
-        if (user.role !== 'user' && selectedRoomId) {
+        if (selectedRoomId) {
           bodyPayload.room_user_id = selectedRoomId
         }
 
@@ -219,9 +204,7 @@ export default function ChatPage() {
         })
 
         if (res.ok) {
-          if (user.role === 'user') {
-            fetchCustomerMessages()
-          } else if (selectedRoomId) {
+          if (selectedRoomId) {
             fetchRoomMessages(selectedRoomId)
             fetchRooms()
           }
@@ -234,6 +217,53 @@ export default function ChatPage() {
     } finally {
       setIsUploadingImage(false)
       if (e.target) e.target.value = ''
+    }
+  }
+
+  // Handle Edit Message
+  const handleStartEdit = (msg: Message) => {
+    setEditingMsgId(msg.id)
+    setEditingText(msg.message)
+  }
+
+  const handleSaveEdit = async (msgId: number) => {
+    if (!editingText.trim() || isSavingEdit) return
+    setIsSavingEdit(true)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: msgId, message: editingText.trim() }),
+      })
+      if (res.ok) {
+        setEditingMsgId(null)
+        if (selectedRoomId) fetchRoomMessages(selectedRoomId)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Gagal mengedit pesan.')
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat mengedit pesan.')
+    } finally {
+      setIsSavingEdit(false)
+    }
+  }
+
+  // Handle Delete Message
+  const handleDeleteMessage = async (msgId: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus pesan ini?')) return
+    try {
+      const res = await fetch(`/api/chat?id=${msgId}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        if (selectedRoomId) fetchRoomMessages(selectedRoomId)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Gagal menghapus pesan.')
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat menghapus pesan.')
     }
   }
 
@@ -284,7 +314,7 @@ export default function ChatPage() {
             {isCourier ? 'Kembali ke Dashboard Kurir' : 'Kembali ke Beranda'}
           </Link>
 
-          {(isCourier || isStaffOrAdmin) && (
+          {user && (
             <button
               type="button"
               onClick={handleRefreshRooms}
@@ -324,8 +354,8 @@ export default function ChatPage() {
                   {isCourier
                     ? 'Pilih Staf atau Admin toko dari dropdown di bawah untuk mengobrol'
                     : isStaffOrAdmin
-                    ? 'Kelola dan jawab pesan pembeli, kurir, atau staf internal'
-                    : 'Bantuan & Konsultasi Pelanggan Bengkalis'}
+                    ? 'Kelola dan jawab pesan kurir atau staf internal'
+                    : 'Pilih Staf atau Admin toko dari dropdown untuk mulai berkonsultasi'}
                 </p>
               </div>
             </div>
@@ -358,51 +388,54 @@ export default function ChatPage() {
             </div>
           ) : (
             <>
-              {/* DROPDOWN SELECTOR UNTUK KURIR, STAF, & ADMIN */}
-              {(isCourier || isStaffOrAdmin) && (
-                <div className="p-3 bg-zinc-100 border-b border-zinc-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-                  <label className="text-xs font-bold text-zinc-800 whitespace-nowrap flex items-center gap-1.5">
-                    {isCourier ? (
-                      <>
-                        <Truck className="h-4 w-4 text-amber-600" />
-                        <span>Pilih Staf / Admin yang mau di-chat:</span>
-                      </>
-                    ) : (
-                      <>
-                        <Users className="h-4 w-4 text-blue-600" />
-                        <span>Pilih Percakapan / Pengguna:</span>
-                      </>
-                    )}
-                  </label>
+              {/* DROPDOWN SELECTOR UNTUK SEMUA PERAN (Pembeli, Kurir, Staf, & Admin) */}
+              <div className="p-3 bg-zinc-100 border-b border-zinc-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                <label className="text-xs font-bold text-zinc-800 whitespace-nowrap flex items-center gap-1.5">
+                  {isCourier ? (
+                    <>
+                      <Truck className="h-4 w-4 text-amber-600" />
+                      <span>Pilih Staf / Admin yang mau di-chat:</span>
+                    </>
+                  ) : isStaffOrAdmin ? (
+                    <>
+                      <Users className="h-4 w-4 text-blue-600" />
+                      <span>Pilih Percakapan / Pengguna:</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="h-4 w-4 text-amber-600" />
+                      <span>Pilih Staf / Admin yang mau di-chat:</span>
+                    </>
+                  )}
+                </label>
 
-                  <select
-                    value={selectedRoomId || ''}
-                    onChange={(e) => setSelectedRoomId(Number(e.target.value))}
-                    className="flex-1 bg-white border border-zinc-300 text-zinc-900 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-900 shadow-xs cursor-pointer"
-                  >
-                    {rooms.length === 0 && (
-                      <option value="">-- Belum ada daftar pengguna --</option>
-                    )}
-                    {rooms.map((r) => {
-                      const roleLabel =
-                        r.role === 'admin'
-                          ? '👑 Administrator'
-                          : r.role === 'staff'
-                          ? '📦 Staf Toko'
-                          : r.role === 'courier'
-                          ? '🚚 Kurir'
-                          : '👤 Pembeli'
+                <select
+                  value={selectedRoomId || ''}
+                  onChange={(e) => setSelectedRoomId(Number(e.target.value))}
+                  className="flex-1 bg-white border border-zinc-300 text-zinc-900 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-900 shadow-xs cursor-pointer"
+                >
+                  {rooms.length === 0 && (
+                    <option value="">-- Belum ada akun staf/admin tersedia --</option>
+                  )}
+                  {rooms.map((r) => {
+                    const roleLabel =
+                      r.role === 'admin'
+                        ? '👑 Administrator'
+                        : r.role === 'staff'
+                        ? '📦 Staf Toko'
+                        : r.role === 'courier'
+                        ? '🚚 Kurir'
+                        : '👤 Pembeli'
 
-                      const unreadBadge = r.unread_count > 0 ? ` 🔴 (${r.unread_count} pesan baru)` : ''
-                      return (
-                        <option key={r.room_user_id} value={r.room_user_id}>
-                          {r.full_name || r.email} — [{roleLabel}]{unreadBadge}
-                        </option>
-                      )
-                    })}
-                  </select>
-                </div>
-              )}
+                    const unreadBadge = r.unread_count > 0 ? ` 🔴 (${r.unread_count} pesan baru)` : ''
+                    return (
+                      <option key={r.room_user_id} value={r.room_user_id}>
+                        {r.full_name || r.email} — [{roleLabel}]{unreadBadge}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
 
               {/* Messages Body */}
               <div
@@ -415,18 +448,10 @@ export default function ChatPage() {
                       <MessageSquare className="h-7 w-7 text-zinc-400" />
                     </div>
                     <p className="text-base font-bold text-zinc-800">
-                      {isCourier
-                        ? 'Mulai Percakapan dengan Staf / Admin'
-                        : isStaffOrAdmin
-                        ? 'Pilih Pengguna dari Dropdown di Atas'
-                        : 'Halo, Ada yang Bisa Kami Bantu?'}
+                      Belum ada pesan dalam percakapan ini
                     </p>
                     <p className="text-xs text-zinc-500 mt-1 max-w-sm">
-                      {isCourier
-                        ? 'Silakan pilih nama Staf atau Admin pada dropdown di atas untuk berkonsultasi seputar pengiriman.'
-                        : isStaffOrAdmin
-                        ? 'Pilih salah satu nama pengguna dari dropdown di atas untuk mulai membalas pesan.'
-                        : 'Kirimkan pesan Anda di bawah ini untuk berkonsultasi seputar stok produk atau bantuan transaksi.'}
+                      Silakan ketikkan pesan Anda di bawah ini untuk memulai percakapan.
                     </p>
                   </div>
                 ) : (
@@ -435,34 +460,96 @@ export default function ChatPage() {
                     const isImageMsg = msg.message.startsWith('[IMAGE]')
                     const imgUrl = isImageMsg ? msg.message.replace('[IMAGE]', '') : ''
 
+                    // Check 12 hours limit for edit/delete
+                    const ageMs = Date.now() - new Date(msg.created_at).getTime()
+                    const canModify = isMe && ageMs <= MAX_EDIT_AGE_MS
+                    const isEditing = editingMsgId === msg.id
+
                     return (
                       <div
                         key={msg.id}
-                        className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                        className={`flex flex-col group ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div className="flex items-center gap-1.5 mb-1 text-[11px] text-zinc-400 font-medium px-1">
                           <span>{isMe ? 'Anda' : (msg.sender_name || 'Pengguna')}</span>
                           <span>•</span>
                           <span>{formatChatTime(msg.created_at)}</span>
                         </div>
-                        <div
-                          className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-2.5 text-xs sm:text-sm font-normal leading-relaxed shadow-xs ${
-                            isMe
-                              ? 'bg-zinc-900 text-white rounded-br-none'
-                              : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-none'
-                          }`}
-                        >
-                          {isImageMsg ? (
-                            <div className="overflow-hidden rounded-xl bg-zinc-100 cursor-pointer group">
-                              <img
-                                src={imgUrl}
-                                alt="Gambar Chat"
-                                className="max-h-[240px] w-full object-cover group-hover:scale-102 transition-transform duration-200 rounded-xl"
-                                onClick={() => setSelectedImageModal(imgUrl)}
+
+                        <div className="flex items-center gap-1 max-w-[85%] sm:max-w-[75%]">
+                          {/* Left-side action buttons for sent messages */}
+                          {canModify && !isEditing && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+                              {!isImageMsg && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(msg)}
+                                  className="p-1 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                                  title="Edit Pesan (Batas 12 Jam)"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                title="Hapus Pesan (Batas 12 Jam)"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Message Bubble / Inline Edit Form */}
+                          {isEditing ? (
+                            <div className="bg-white border border-amber-300 rounded-2xl p-2.5 shadow-md flex-1 flex flex-col gap-2">
+                              <input
+                                type="text"
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                className="w-full text-xs text-zinc-900 border border-zinc-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500"
                               />
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingMsgId(null)}
+                                  className="px-2 py-1 text-[11px] font-semibold text-zinc-600 hover:bg-zinc-100 rounded-md cursor-pointer"
+                                >
+                                  Batal
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveEdit(msg.id)}
+                                  disabled={isSavingEdit || !editingText.trim()}
+                                  className="px-2.5 py-1 text-[11px] font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-md cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                                >
+                                  {isSavingEdit ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                                  Simpan
+                                </button>
+                              </div>
                             </div>
                           ) : (
-                            <div className="px-1.5 py-0.5">{msg.message}</div>
+                            <div
+                              className={`rounded-2xl p-2.5 text-xs sm:text-sm font-normal leading-relaxed shadow-xs ${
+                                isMe
+                                  ? 'bg-zinc-900 text-white rounded-br-none'
+                                  : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-none'
+                              }`}
+                            >
+                              {isImageMsg ? (
+                                <div className="overflow-hidden rounded-xl bg-zinc-100 cursor-pointer group/img">
+                                  <img
+                                    src={imgUrl}
+                                    alt="Gambar Chat"
+                                    className="max-h-[240px] w-full object-cover group-hover/img:scale-102 transition-transform duration-200 rounded-xl"
+                                    onClick={() => setSelectedImageModal(imgUrl)}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="px-1.5 py-0.5">{msg.message}</div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -537,13 +624,7 @@ export default function ChatPage() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder={
-                      isCourier
-                        ? 'Tulis pesan koordinasi...'
-                        : isStaffOrAdmin
-                        ? 'Balas pesan...'
-                        : 'Tulis pesan Anda...'
-                    }
+                    placeholder="Tulis pesan Anda..."
                     className="flex-1 min-w-0 bg-zinc-100 border border-zinc-200 rounded-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 truncate"
                   />
                   <button
