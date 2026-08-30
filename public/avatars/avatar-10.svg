@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="bg10" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F9A825"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#bg10)"/>
+  <!-- Body - sport jersey -->
+  <ellipse cx="50" cy="88" rx="24" ry="15" fill="#1565C0"/>
+  <rect x="26" y="68" width="48" height="22" rx="8" fill="#1565C0"/>
+  <!-- Jersey stripes -->
+  <rect x="44" y="68" width="12" height="22" fill="#0D47A1"/>
+  <!-- Jersey number -->
+  <text x="48" y="85" font-size="9" fill="white" font-weight="bold">10</text>
+  <!-- Neck -->
+  <rect x="43" y="63" width="14" height="10" fill="#FDBCB4"/>
+  <!-- Head -->
+  <ellipse cx="50" cy="44" rx="24" ry="26" fill="#FDBCB4"/>
+  <!-- Ears -->
+  <ellipse cx="26" cy="45" rx="5" ry="7" fill="#FDBCB4"/>
+  <ellipse cx="74" cy="45" rx="5" ry="7" fill="#FDBCB4"/>
+  <!-- Hair - short sporty -->
+  <ellipse cx="50" cy="22" rx="24" ry="14" fill="#1A1A1A"/>
+  <path d="M26 30 Q27 20 35 18 Q50 12 65 18 Q73 20 74 30 Q65 20 50 22 Q35 20 26 30" fill="#1A1A1A"/>
+  <!-- Sweatband -->
+  <rect x="26" y="27" width="48" height="7" rx="3" fill="#E53935"/>
+  <line x1="26" y1="30" x2="74" y2="30" stroke="#FFCDD2" stroke-width="1.5" opacity="0.5"/>
+  <!-- Eyes - determined look -->
+  <ellipse cx="38" cy="45" rx="6" ry="5.5" fill="white"/>
+  <ellipse cx="62" cy="45" rx="6" ry="5.5" fill="white"/>
+  <circle cx="39" cy="46" r="3.5" fill="#1A1A1A"/>
+  <circle cx="63" cy="46" r="3.5" fill="#1A1A1A"/>
+  <circle cx="40" cy="45" r="1.2" fill="white"/>
+  <circle cx="64" cy="45" r="1.2" fill="white"/>
+  <!-- Eyebrows - serious -->
+  <path d="M32 38 Q38 35 44 37" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M56 37 Q62 35 68 38" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Confident smirk -->
+  <path d="M43 57 Q50 62 58 57" stroke="#C97B63" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Nose -->
+  <ellipse cx="50" cy="51" rx="3" ry="2.5" fill="#E8A090"/>
+</svg>

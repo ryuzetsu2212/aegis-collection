@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="bg11" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00BCD4"/>
+      <stop offset="100%" stop-color="#006064"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#bg11)"/>
+  <!-- Body - kimono/hanfu style -->
+  <ellipse cx="50" cy="88" rx="26" ry="16" fill="#E91E63"/>
+  <rect x="24" y="65" width="52" height="25" rx="5" fill="#E91E63"/>
+  <!-- Kimono collar -->
+  <polygon points="50,65 38,75 38,90 50,80 62,90 62,75" fill="#FCE4EC"/>
+  <polygon points="50,65 44,72 44,85 50,78 56,85 56,72" fill="#F48FB1"/>
+  <!-- Flower on kimono -->
+  <circle cx="32" cy="78" r="5" fill="#FFD54F" opacity="0.8"/>
+  <circle cx="32" cy="78" r="3" fill="#FF8F00"/>
+  <!-- Neck -->
+  <rect x="44" y="60" width="12" height="9" fill="#FDBCB4"/>
+  <!-- Head -->
+  <ellipse cx="50" cy="43" rx="23" ry="25" fill="#FDBCB4"/>
+  <!-- Ears -->
+  <ellipse cx="27" cy="44" rx="5" ry="7" fill="#FDBCB4"/>
+  <ellipse cx="73" cy="44" rx="5" ry="7" fill="#FDBCB4"/>
+  <!-- Ear studs -->
+  <circle cx="27" cy="44" r="3" fill="#FFD700"/>
+  <circle cx="73" cy="44" r="3" fill="#FFD700"/>
+  <!-- Hair - traditional updo bun -->
+  <ellipse cx="50" cy="22" rx="22" ry="12" fill="#1A1A1A"/>
+  <ellipse cx="50" cy="15" rx="12" ry="10" fill="#1A1A1A"/>
+  <!-- Hair bun decoration -->
+  <circle cx="50" cy="10" r="5" fill="#E91E63"/>
+  <circle cx="44" cy="10" r="3" fill="#FFD700"/>
+  <circle cx="56" cy="10" r="3" fill="#FFD700"/>
+  <!-- Hairpin -->
+  <line x1="55" y1="8" x2="65" y2="5" stroke="#FFD700" stroke-width="2"/>
+  <circle cx="65" cy="5" r="3" fill="#FF4081"/>
+  <!-- Eyes - almond shaped -->
+  <path d="M32 43 Q38 38 44 43 Q38 47 32 43" fill="white"/>
+  <path d="M56 43 Q62 38 68 43 Q62 47 56 43" fill="white"/>
+  <circle cx="38" cy="43" r="4" fill="#3E2723"/>
+  <circle cx="62" cy="43" r="4" fill="#3E2723"/>
+  <circle cx="39" cy="42" r="1.3" fill="white"/>
+  <circle cx="63" cy="42" r="1.3" fill="white"/>
+  <!-- Eyelashes upper -->
+  <path d="M32 43 Q33 40 35 39" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  <path d="M56 43 Q57 40 59 39" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  <!-- Eyebrows thin -->
+  <path d="M33 38 Q38 35 44 37" stroke="#3E2723" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M56 37 Q62 35 67 38" stroke="#3E2723" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- Small nose -->
+  <ellipse cx="50" cy="50" rx="2" ry="1.5" fill="#E8A090"/>
+  <!-- Gentle smile -->
+  <path d="M44 56 Q50 61 56 56" stroke="#C97B63" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Blush -->
+  <ellipse cx="31" cy="52" rx="6" ry="4" fill="#FFB3BA" opacity="0.5"/>
+  <ellipse cx="69" cy="52" rx="6" ry="4" fill="#FFB3BA" opacity="0.5"/>
+</svg>

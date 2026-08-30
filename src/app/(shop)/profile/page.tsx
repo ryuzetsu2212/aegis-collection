@@ -18,6 +18,12 @@ const AVATAR_PRESETS = [
   { id: 'avatar-4', title: 'Trendy Beret 2D', url: '/avatars/avatar-4.svg' },
   { id: 'avatar-5', title: 'Beanie Boy 2D', url: '/avatars/avatar-5.svg' },
   { id: 'avatar-6', title: 'Cute Cat Mascot 2D', url: '/avatars/avatar-6.svg' },
+  { id: 'avatar-7', title: 'Ninja Boy 2D', url: '/avatars/avatar-7.svg' },
+  { id: 'avatar-8', title: 'Hoodie Girl 2D', url: '/avatars/avatar-8.svg' },
+  { id: 'avatar-9', title: 'Astronaut 2D', url: '/avatars/avatar-9.svg' },
+  { id: 'avatar-10', title: 'Sport Athlete 2D', url: '/avatars/avatar-10.svg' },
+  { id: 'avatar-11', title: 'Kimono Girl 2D', url: '/avatars/avatar-11.svg' },
+  { id: 'avatar-12', title: 'Fox Mascot 2D', url: '/avatars/avatar-12.svg' },
 ]
 
 const BENGKALIS_DATA: Record<string, string[]> = {

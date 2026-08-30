@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="bg12" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2E7D32"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#bg12)"/>
+  <!-- Fox body/ears -->
+  <!-- Ear left -->
+  <polygon points="22,35 28,10 38,32" fill="#FF6D00"/>
+  <polygon points="25,33 29,15 36,31" fill="#FFE0B2"/>
+  <!-- Ear right -->
+  <polygon points="78,35 72,10 62,32" fill="#FF6D00"/>
+  <polygon points="75,33 71,15 64,31" fill="#FFE0B2"/>
+  <!-- Body / jacket -->
+  <ellipse cx="50" cy="88" rx="25" ry="15" fill="#FF6D00"/>
+  <rect x="25" y="68" width="50" height="22" rx="8" fill="#FF6D00"/>
+  <!-- Jacket inner -->
+  <polygon points="50,68 42,75 42,90 50,82 58,90 58,75" fill="#FFE0B2"/>
+  <!-- Neck -->
+  <rect x="43" y="62" width="14" height="10" fill="#FFE0B2"/>
+  <!-- Fox head -->
+  <ellipse cx="50" cy="43" rx="24" ry="26" fill="#FF6D00"/>
+  <!-- Fox face markings -->
+  <ellipse cx="50" cy="52" rx="16" ry="13" fill="#FFE0B2"/>
+  <!-- Eyes -->
+  <ellipse cx="38" cy="42" rx="7" ry="7" fill="white"/>
+  <ellipse cx="62" cy="42" rx="7" ry="7" fill="white"/>
+  <circle cx="39" cy="43" r="4.5" fill="#1A1A1A"/>
+  <circle cx="63" cy="43" r="4.5" fill="#1A1A1A"/>
+  <!-- Fox eye shine - amber -->
+  <circle cx="40" cy="42" r="1.8" fill="#FFB300"/>
+  <circle cx="64" cy="42" r="1.8" fill="#FFB300"/>
+  <circle cx="40.5" cy="41.5" r="0.8" fill="white"/>
+  <circle cx="64.5" cy="41.5" r="0.8" fill="white"/>
+  <!-- Eyebrows -->
+  <path d="M32 35 Q38 32 44 34" stroke="#BF360C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M56 34 Q62 32 68 35" stroke="#BF360C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Fox nose -->
+  <ellipse cx="50" cy="54" rx="4" ry="3" fill="#BF360C"/>
+  <!-- Whiskers -->
+  <line x1="25" y1="53" x2="40" y2="55" stroke="#BF360C" stroke-width="1.2" opacity="0.7"/>
+  <line x1="25" y1="57" x2="40" y2="57" stroke="#BF360C" stroke-width="1.2" opacity="0.7"/>
+  <line x1="60" y1="55" x2="75" y2="53" stroke="#BF360C" stroke-width="1.2" opacity="0.7"/>
+  <line x1="60" y1="57" x2="75" y2="57" stroke="#BF360C" stroke-width="1.2" opacity="0.7"/>
+  <!-- Mouth -->
+  <path d="M46 57 Q50 61 54 57" stroke="#BF360C" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Tail hint bottom -->
+  <path d="M68 88 Q85 80 82 70" stroke="#FF6D00" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M68 88 Q85 80 82 70" stroke="#FFE0B2" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

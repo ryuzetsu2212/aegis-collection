@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <circle cx="50" cy="50" r="50" fill="#FF6B35"/>
+  <!-- Body -->
+  <ellipse cx="50" cy="85" rx="22" ry="18" fill="#FF8C42"/>
+  <!-- Ninja mask - lower face cover -->
+  <rect x="28" y="52" width="44" height="18" rx="5" fill="#1a1a2e"/>
+  <!-- Eyes - ninja style -->
+  <ellipse cx="38" cy="46" rx="7" ry="8" fill="white"/>
+  <ellipse cx="62" cy="46" rx="7" ry="8" fill="white"/>
+  <circle cx="39" cy="47" r="4" fill="#222"/>
+  <circle cx="63" cy="47" r="4" fill="#222"/>
+  <circle cx="40" cy="46" r="1.5" fill="white"/>
+  <circle cx="64" cy="46" r="1.5" fill="white"/>
+  <!-- Headband -->
+  <rect x="25" y="30" width="50" height="10" rx="3" fill="#C0392B"/>
+  <!-- Head -->
+  <ellipse cx="50" cy="42" rx="24" ry="26" fill="#FDBCB4"/>
+  <!-- Ninja headband over head -->
+  <rect x="25" y="30" width="50" height="10" rx="3" fill="#C0392B"/>
+  <circle cx="50" cy="35" r="4" fill="#E74C3C"/>
+  <!-- Ears -->
+  <ellipse cx="26" cy="45" rx="5" ry="7" fill="#FDBCB4"/>
+  <ellipse cx="74" cy="45" rx="5" ry="7" fill="#FDBCB4"/>
+  <!-- Mask detail -->
+  <rect x="28" y="52" width="44" height="18" rx="5" fill="#1a1a2e"/>
+  <!-- Eye whites -->
+  <ellipse cx="38" cy="45" rx="7" ry="8" fill="white"/>
+  <ellipse cx="62" cy="45" rx="7" ry="8" fill="white"/>
+  <!-- Pupils -->
+  <circle cx="39" cy="46" r="4" fill="#111"/>
+  <circle cx="63" cy="46" r="4" fill="#111"/>
+  <circle cx="40" cy="45" r="1.5" fill="white"/>
+  <circle cx="64" cy="45" r="1.5" fill="white"/>
+  <!-- Eyebrows -->
+  <path d="M31 36 Q38 33 44 36" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M56 36 Q62 33 69 36" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

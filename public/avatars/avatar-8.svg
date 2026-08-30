@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background gradient -->
+  <defs>
+    <radialGradient id="bg8" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6C5CE7"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#bg8)"/>
+  <!-- Body / hoodie -->
+  <ellipse cx="50" cy="88" rx="24" ry="17" fill="#4C3A9E"/>
+  <rect x="26" y="72" width="48" height="20" rx="8" fill="#4C3A9E"/>
+  <!-- Hoodie strings -->
+  <line x1="45" y1="72" x2="43" y2="82" stroke="#3a2d7a" stroke-width="2"/>
+  <line x1="55" y1="72" x2="57" y2="82" stroke="#3a2d7a" stroke-width="2"/>
+  <circle cx="43" cy="83" r="2.5" fill="#7C3AED"/>
+  <circle cx="57" cy="83" r="2.5" fill="#7C3AED"/>
+  <!-- Neck -->
+  <rect x="43" y="64" width="14" height="12" fill="#F1C27D"/>
+  <!-- Head -->
+  <ellipse cx="50" cy="45" rx="25" ry="27" fill="#F1C27D"/>
+  <!-- Ears -->
+  <ellipse cx="25" cy="46" rx="5" ry="7" fill="#F1C27D"/>
+  <ellipse cx="75" cy="46" rx="5" ry="7" fill="#F1C27D"/>
+  <!-- Hair - messy wavy -->
+  <ellipse cx="50" cy="22" rx="25" ry="13" fill="#8B4513"/>
+  <path d="M25 28 Q30 15 40 20 Q50 10 60 20 Q70 15 75 28" fill="#8B4513"/>
+  <path d="M25 30 Q22 22 26 18" stroke="#8B4513" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M75 30 Q78 22 74 18" stroke="#8B4513" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Eyes -->
+  <ellipse cx="38" cy="47" rx="6" ry="6.5" fill="white"/>
+  <ellipse cx="62" cy="47" rx="6" ry="6.5" fill="white"/>
+  <circle cx="39" cy="48" r="4" fill="#5B2D8E"/>
+  <circle cx="63" cy="48" r="4" fill="#5B2D8E"/>
+  <circle cx="40" cy="47" r="1.5" fill="white"/>
+  <circle cx="64" cy="47" r="1.5" fill="white"/>
+  <!-- Smile -->
+  <path d="M42 58 Q50 64 58 58" stroke="#C97B63" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Blush -->
+  <ellipse cx="30" cy="55" rx="6" ry="4" fill="#FFB3BA" opacity="0.6"/>
+  <ellipse cx="70" cy="55" rx="6" ry="4" fill="#FFB3BA" opacity="0.6"/>
+  <!-- Stars/sparkles on hoodie -->
+  <text x="36" y="88" font-size="8" fill="#C4B5FD">★ ★</text>
+</svg>
