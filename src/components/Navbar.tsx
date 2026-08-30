@@ -52,6 +52,16 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
 
   useEffect(() => {
     setMounted(true)
+
+    // Sanitize leftover invalid cart items from local storage
+    const storeState = useCartStore.getState()
+    if (storeState.items?.length > 0) {
+      const valid = storeState.items.filter((i) => i && i.productTitle && i.productId && Number(i.price) > 0)
+      if (valid.length !== storeState.items.length) {
+        useCartStore.setState({ items: valid })
+      }
+    }
+
     async function fetchUserAndBanner() {
       try {
         const res = await fetch('/api/auth/me')

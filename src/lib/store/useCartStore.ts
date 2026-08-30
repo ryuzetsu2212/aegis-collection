@@ -118,18 +118,27 @@ export const useCartStore = create<CartState>()(
       },
       
       getTotalItems: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0)
+        return get().items
+          .filter((i) => i && i.productTitle && i.productId && Number(i.price) > 0)
+          .reduce((total, item) => total + item.quantity, 0)
       },
       
       getTotalPrice: () => {
-        return get().items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0
-        )
+        return get().items
+          .filter((i) => i && i.productTitle && i.productId && Number(i.price) > 0)
+          .reduce((total, item) => total + item.price * item.quantity, 0)
       },
     }),
     {
       name: 'toko-pakaian-cart',
+      onRehydrateStorage: () => (state) => {
+        if (state?.items) {
+          const valid = state.items.filter((i) => i && i.productTitle && i.productId && Number(i.price) > 0)
+          if (valid.length !== state.items.length) {
+            state.items = valid
+          }
+        }
+      },
     }
   )
 )
