@@ -43,7 +43,7 @@ export default async function HomePage({
   const limit = 12
 
   // Fetch active banners
-  const banners = db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY position ASC').all() as DbBanner[]
+  const banners = (await db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY position ASC').all()) as DbBanner[]
 
   // Build query for products with filters
   let baseWhere = ' FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.is_active = 1'
@@ -73,7 +73,7 @@ export default async function HomePage({
   // Get total count
   const countQuery = 'SELECT COUNT(*) as total' + baseWhere
   const countStmt = db.prepare(countQuery)
-  const totalRow = countStmt.get(...params) as { total: number } | undefined
+  const totalRow = (await countStmt.get(...params)) as { total: number } | undefined
   const total = totalRow?.total ?? 0
   const totalPages = Math.ceil(total / limit)
 
@@ -103,8 +103,8 @@ export default async function HomePage({
   query += ' LIMIT ? OFFSET ?'
   params.push(limit, offset)
 
-  const rows = db.prepare(query).all(...params) as ProductWithCategory[]
-  const categories = db.prepare('SELECT id, name, slug FROM categories ORDER BY name').all() as { id: number; name: string; slug: string }[]
+  const rows = (await db.prepare(query).all(...params)) as ProductWithCategory[]
+  const categories = (await db.prepare('SELECT id, name, slug FROM categories ORDER BY name').all()) as { id: number; name: string; slug: string }[]
 
   return (
     <div className="flex-1 bg-zinc-50">

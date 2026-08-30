@@ -65,13 +65,13 @@ export async function GET(request: NextRequest) {
     if (id || slug) {
       query += ' LIMIT 1'
       const stmt = db.prepare(query)
-      const row = stmt.get(...params) as any
+      const row = (await stmt.get(...params)) as any
       if (!row) {
         return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 })
       }
-      const variants = db.prepare(
+      const variants = (await db.prepare(
         'SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id = ?'
-      ).all(row.id) as DbProductVariant[]
+      ).all(row.id)) as DbProductVariant[]
       return NextResponse.json({
         ...row,
         product_variants: variants,
@@ -84,25 +84,25 @@ export async function GET(request: NextRequest) {
       countQuery += ' WHERE ' + whereClauses.join(' AND ')
     }
     const countStmt = db.prepare(countQuery)
-    const totalRow = countStmt.get(...params) as { total: number } | undefined
+    const totalRow = (await countStmt.get(...params)) as { total: number } | undefined
     const total = totalRow?.total ?? 0
 
     query += ` ORDER BY p.created_at DESC LIMIT ? OFFSET ?`
     params.push(limit, offset)
 
     const stmt = db.prepare(query)
-    const rows = stmt.all(...params) as any[]
+    const rows = (await stmt.all(...params)) as any[]
 
     // Attach variants
-    const products = rows.map(row => {
-      const variants = db.prepare(
+    const products = await Promise.all(rows.map(async row => {
+      const variants = (await db.prepare(
         'SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id = ?'
-      ).all(row.id) as DbProductVariant[]
+      ).all(row.id)) as DbProductVariant[]
       return {
         ...row,
         product_variants: variants,
       }
-    })
+    }))
 
     return NextResponse.json({
       products,

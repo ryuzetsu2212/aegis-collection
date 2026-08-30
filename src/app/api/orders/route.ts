@@ -77,9 +77,9 @@ export async function GET(request: NextRequest) {
 
     query += ' ORDER BY o.created_at DESC'
 
-    const rows = db.prepare(query).all(...params) as any[]
+    const rows = (await db.prepare(query).all(...params)) as any[]
 
-    const orders = rows.map(row => {
+    const orders = await Promise.all(rows.map(async row => {
       let extractedPhone = row.user_phone || null
       if (!extractedPhone && row.shipping_address) {
         const match = row.shipping_address.match(/(?:Telp:\s*|telp:\s*|hp:\s*|Hp:\s*|Phone:\s*|no\.?\s*hp:\s*)([0-9]+)/i) || row.shipping_address.match(/(?:08\d{8,11}|62\d{9,12})/)
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const items = db.prepare(`
+      const items = (await db.prepare(`
         SELECT oi.*, pv.product_id, pv.size, pv.color, pr.title as product_title, pr.slug as product_slug, pr.image_url,
           r.rating as review_rating, r.comment as review_comment
         FROM order_items oi
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         JOIN products pr ON pv.product_id = pr.id
         LEFT JOIN reviews r ON r.order_id = oi.order_id AND r.product_id = pv.product_id AND r.user_id = ?
         WHERE oi.order_id = ?
-      `).all(row.user_id, row.id) as any[]
+      `).all(row.user_id, row.id)) as any[]
 
       return {
         ...row,
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
         phone: extractedPhone,
         order_items: items,
       }
-    })
+    }))
 
     return NextResponse.json(orders)
   } catch (error) {
