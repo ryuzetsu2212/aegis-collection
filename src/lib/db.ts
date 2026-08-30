@@ -476,14 +476,19 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
     }
 
     // 4f. Standard table SELECT
-    const selectMatch = cleanSql.match(/SELECT\s+(.+?)\s+FROM\s+([a-z0-9_]+)(?:\s+([a-z0-9_]+))?(?:\s+(?:LEFT\s+JOIN|JOIN)\s+[^\s]+\s+ON\s+.+?)?(?:\s+WHERE\s+(.+?))?(?:\s+GROUP\s+BY\s+.+?)?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i)
-    if (selectMatch) {
-      const tableName = selectMatch[2].trim()
-      const whereStr = selectMatch[5] || ''
-      const orderStr = selectMatch[6] || ''
-      const limitNum = selectMatch[7] ? parseInt(selectMatch[7], 10) : null
-
+    const fromMatch = cleanSql.match(/^SELECT\s+(.+?)\s+FROM\s+([a-z0-9_]+)/i)
+    if (fromMatch) {
+      const tableName = fromMatch[2].trim()
       let query = supabase.from(tableName).select('*')
+
+      const whereMatch = cleanSql.match(/\s+WHERE\s+(.+?)(?:\s+GROUP\s+BY|\s+ORDER\s+BY|\s+LIMIT|$)/i)
+      const whereStr = whereMatch ? whereMatch[1].trim() : ''
+
+      const orderMatch = cleanSql.match(/\s+ORDER\s+BY\s+(.+?)(?:\s+LIMIT|$)/i)
+      const orderStr = orderMatch ? orderMatch[1].trim() : ''
+
+      const limitMatch = cleanSql.match(/\s+LIMIT\s+(\d+)/i)
+      const limitNum = limitMatch ? parseInt(limitMatch[1], 10) : null
 
       if (whereStr) {
         let pIdx = 0
