@@ -3,6 +3,9 @@ import { PackageX, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { ProductDetailClient } from './ProductDetailClient'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function ProductDetailPage({
   params,
 }: {

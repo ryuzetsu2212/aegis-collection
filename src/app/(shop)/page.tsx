@@ -6,6 +6,9 @@ import { AdvancedFilter } from '@/components/AdvancedFilter'
 import { Pagination } from '@/components/Pagination'
 import Image from 'next/image'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface ProductWithCategory {
   id: number
   slug: string
