@@ -63,7 +63,7 @@ export function AdvancedFilter({ categories }: AdvancedFilterProps) {
           className="bg-white border border-zinc-200 rounded-xl px-3.5 py-2 text-xs font-semibold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 cursor-pointer shadow-xs"
         >
           <option value="">Semua Kategori</option>
-          {categories.map((c) => (
+          {(Array.isArray(categories) ? categories : []).map((c) => (
             <option key={c.id} value={c.slug}>
               {c.name}
             </option>
