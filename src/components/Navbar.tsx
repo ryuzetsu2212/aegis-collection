@@ -183,17 +183,30 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                 </Link>
               )}
               {canAccessCourier && (
-                <Link
-                  href="/courier"
-                  className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    isActive('/courier')
-                      ? 'text-amber-600 font-bold border-b-2 border-amber-600 pb-0.5'
-                      : 'text-zinc-600 hover:text-amber-600'
-                  }`}
-                >
-                  <Truck className="h-4 w-4" />
-                  <span>Pengiriman Kurir</span>
-                </Link>
+                <>
+                  <Link
+                    href="/courier"
+                    className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                      isActive('/courier')
+                        ? 'text-amber-600 font-bold border-b-2 border-amber-600 pb-0.5'
+                        : 'text-zinc-600 hover:text-amber-600'
+                    }`}
+                  >
+                    <Truck className="h-4 w-4" />
+                    <span>Pengiriman Kurir</span>
+                  </Link>
+                  <Link
+                    href="/chat"
+                    className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                      isActive('/chat')
+                        ? 'text-blue-600 font-bold border-b-2 border-blue-600 pb-0.5'
+                        : 'text-zinc-600 hover:text-blue-600'
+                    }`}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Chat Staf & Admin</span>
+                  </Link>
+                </>
               )}
               {!(isAdmin || isStaff || isCourier) && (
                 <Link
@@ -265,6 +278,19 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                   {/* Desktop Dropdown Menu */}
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200 rounded-xl shadow-xl py-1.5 z-50">
+                      {isCourier && (
+                        <>
+                          <Link
+                            href="/chat"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="block px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50 flex items-center gap-1.5"
+                          >
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            <span>Chat Staf & Admin</span>
+                          </Link>
+                          <hr className="my-1 border-zinc-100" />
+                        </>
+                      )}
                       {(isAdmin || isStaff) && (
                         <>
                           <Link
@@ -278,9 +304,10 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                           <Link
                             href="/staff/chat"
                             onClick={() => setIsUserMenuOpen(false)}
-                            className="block px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50"
+                            className="block px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50 flex items-center gap-1.5"
                           >
-                            {isAdmin ? 'Chat Internal Staf' : 'Pusat Chat CS Staf'}
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            <span>{isAdmin ? 'Chat Internal Staf' : 'Pusat Chat CS Staf'}</span>
                           </Link>
                           <Link
                             href="/staff/products"
@@ -524,6 +551,18 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                   )}
 
                   <Link
+                    href="/staff/chat"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-950 font-bold text-xs transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <MessageSquare className="h-4 w-4 text-blue-700" />
+                      <span>{isAdmin ? 'Chat Internal Staf' : 'Pusat Chat CS Staf'}</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-blue-400" />
+                  </Link>
+
+                  <Link
                     href="/staff/products"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center justify-between p-2.5 rounded-xl hover:bg-zinc-100 text-zinc-900 font-semibold text-xs transition-colors"
@@ -574,6 +613,18 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
                       <span>Pengiriman Kurir</span>
                     </div>
                     <ChevronRight className="h-4 w-4 text-amber-400" />
+                  </Link>
+
+                  <Link
+                    href="/chat"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-950 font-bold text-xs transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <MessageSquare className="h-4 w-4 text-blue-700" />
+                      <span>Chat Staf & Admin</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-blue-400" />
                   </Link>
                 </div>
               )}

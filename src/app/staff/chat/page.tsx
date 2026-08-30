@@ -221,15 +221,15 @@ export default function StaffChatPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight flex items-center gap-2">
             {isAdmin ? (
-              <ShieldCheck className="h-6 w-6 text-purple-400" />
+              <ShieldCheck className="h-6 w-6 text-purple-600" />
             ) : (
-              <MessageSquare className="h-6 w-6 text-blue-400" />
+              <MessageSquare className="h-6 w-6 text-blue-600" />
             )}
             <span>{isAdmin ? 'Pusat Chat Admin Toko (Internal Staf)' : 'Pusat Chat CS & Internal Staf'}</span>
           </h1>
-          <p className="text-sm text-zinc-300 mt-1">
+          <p className="text-sm text-zinc-500 mt-1">
             {isAdmin
               ? 'Komunikasi dan koordinasi internal khusus antara Admin Toko dan Staf.'
               : 'Kelola dan jawab pertanyaan pembeli, kurir, serta koordinasi internal toko.'}

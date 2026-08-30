@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ShoppingCart, Package, User, Truck } from 'lucide-react'
+import { Home, ShoppingCart, Package, User, Truck, MessageSquare } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/lib/store/useCartStore'
 
@@ -56,6 +56,16 @@ export function BottomNav({ initialUser }: { initialUser?: AuthUser | null }) {
         >
           <Truck className={`h-5 w-5 mb-0.5 ${isActive('/courier') ? 'text-amber-600 stroke-[2.5]' : 'text-zinc-500'}`} />
           <span>Pengiriman</span>
+        </Link>
+
+        <Link
+          href="/chat"
+          className={`flex flex-col items-center justify-center flex-1 py-1 text-[11px] font-medium transition-colors ${
+            isActive('/chat') ? 'text-blue-600 font-bold' : 'text-zinc-500 hover:text-zinc-800'
+          }`}
+        >
+          <MessageSquare className={`h-5 w-5 mb-0.5 ${isActive('/chat') ? 'text-blue-600 stroke-[2.5]' : 'text-zinc-500'}`} />
+          <span>Chat Staf</span>
         </Link>
 
         <Link
