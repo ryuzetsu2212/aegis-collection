@@ -338,8 +338,8 @@ export function ProductDetailClient({
                   </div>
                 )}
 
-                {/* Color Selector */}
-                {availableColors.length > 0 && (
+                {/* Color Selector (hanya tampil jika terdapat lebih dari 1 varian warna) */}
+                {availableColors.length > 1 && (
                   <div>
                     <div className="mb-3">
                       <label className="text-sm font-semibold text-zinc-900">
