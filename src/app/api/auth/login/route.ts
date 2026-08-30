@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { loginUser, setAuthCookie } from '@/lib/auth'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { logAudit } from '@/lib/audit'
 
 const loginLimiter = {
   name: 'login',
@@ -38,6 +39,19 @@ export async function POST(request: NextRequest) {
     }
 
     await setAuthCookie(result.token)
+
+    await logAudit({
+      user: result.user,
+      action: 'USER_LOGIN',
+      entityType: 'user',
+      entityId: result.user.id,
+      details: {
+        email: result.user.email,
+        nama: result.user.full_name || 'Pengguna',
+        peran: result.user.role,
+      },
+      ipAddress: ip,
+    })
 
     return NextResponse.json({
       user: result.user,
