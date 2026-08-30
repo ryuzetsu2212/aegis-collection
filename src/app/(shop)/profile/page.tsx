@@ -515,7 +515,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="shrink-0 w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+          <div className="shrink-0 w-full sm:w-auto hidden sm:flex flex-col sm:flex-row gap-2">
             {profile.role === 'user' && (
               <>
                 <Link href="/orders" className="w-full sm:w-auto">
@@ -841,7 +841,7 @@ export default function ProfilePage() {
 
             {/* Card Keluar Akun (Khusus Pelanggan) */}
             {profile?.role === 'user' && (
-              <div className="bg-white border border-red-200 rounded-2xl p-6 shadow-sm">
+              <div className="hidden sm:block bg-white border border-red-200 rounded-2xl p-6 shadow-sm">
                 <h2 className="text-base font-bold text-red-600 mb-1 flex items-center gap-2">
                   <LogOut className="h-4 w-4 text-red-600" />
                   Keluar dari Akun
