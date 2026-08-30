@@ -326,18 +326,22 @@ export async function POST(request: NextRequest) {
       `).run(item.quantity, item.variantId)
     }
 
-    await logAudit({
-      user,
-      action: 'ORDER_CREATED',
-      entityType: 'order',
-      entityId: orderId,
-      details: {
-        nominal_total: total_amount,
-        tipe_pembelian: purchase_type,
-        metode_pembayaran: payment_method,
-        status: initialStatus,
-      },
-    })
+    try {
+      await logAudit({
+        user,
+        action: 'ORDER_CREATED',
+        entityType: 'order',
+        entityId: orderId,
+        details: {
+          nominal_total: total_amount,
+          tipe_pembelian: purchase_type,
+          metode_pembayaran: payment_method,
+          status: initialStatus,
+        },
+      })
+    } catch (auditErr) {
+      console.warn('logAudit failed non-critically:', auditErr)
+    }
 
     return NextResponse.json({
       id: orderId,
