@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb()
 
     // Cek apakah email sudah terdaftar
-    const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(cleanEmail)
+    const existingUser = await db.prepare('SELECT id FROM users WHERE email = ?').get(cleanEmail)
     if (existingUser) {
       return NextResponse.json(
         { error: 'Email sudah terdaftar. Silakan masuk (login).' },

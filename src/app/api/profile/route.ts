@@ -52,7 +52,7 @@ export async function PUT(request: NextRequest) {
     const db = await getDb()
 
     // Ambil data user saat ini dari DB
-    const currentUser = db.prepare('SELECT * FROM users WHERE id = ?').get(session.id) as DbUser | undefined
+    const currentUser = await db.prepare('SELECT * FROM users WHERE id = ?').get(session.id) as DbUser | undefined
     if (!currentUser) {
       return NextResponse.json({ error: 'User tidak ditemukan.' }, { status: 404 })
     }
@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest) {
 
     // Cek jika email diganti, pastikan tidak bentrok dengan user lain
     if (targetEmail !== currentUser.email.toLowerCase()) {
-      const existing = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(targetEmail, session.id)
+      const existing = await db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(targetEmail, session.id)
       if (existing) {
         return NextResponse.json({ error: 'Email sudah digunakan oleh akun lain.' }, { status: 400 })
       }

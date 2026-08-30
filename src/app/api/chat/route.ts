@@ -27,7 +27,7 @@ export async function GET(request: Request) {
         const roomId = parseInt(targetRoomId, 10)
         
         // Mark as read messages from target user sent to current user
-        db.prepare('UPDATE chat_messages SET is_read = 1 WHERE sender_id = ? AND (room_user_id = ? OR room_user_id = ?)').run(roomId, user.id, roomId)
+        await db.prepare('UPDATE chat_messages SET is_read = 1 WHERE sender_id = ? AND (room_user_id = ? OR room_user_id = ?)').run(roomId, user.id, roomId)
 
         // Select all messages exchanged between current user and target user
         const rawMessages = db.prepare(`
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
           created_at: normalizeIso(m.created_at),
         }))
 
-        const roomUser = db.prepare('SELECT id, full_name, email, avatar_url, role FROM users WHERE id = ?').get(roomId)
+        const roomUser = await db.prepare('SELECT id, full_name, email, avatar_url, role FROM users WHERE id = ?').get(roomId)
 
         return NextResponse.json({ messages, roomUser })
       } else {
@@ -137,7 +137,7 @@ export async function GET(request: Request) {
       }
     } else {
       if (searchParams.get('mark_read') === '1') {
-        db.prepare('UPDATE chat_messages SET is_read = 1 WHERE (room_user_id = ? OR sender_id = ?) AND sender_id != ?').run(user.id, user.id, user.id)
+        await db.prepare('UPDATE chat_messages SET is_read = 1 WHERE (room_user_id = ? OR sender_id = ?) AND sender_id != ?').run(user.id, user.id, user.id)
       }
 
       const rawMessages = db.prepare(`

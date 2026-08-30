@@ -5,7 +5,7 @@ import { getDb } from '@/lib/db'
 export async function GET() {
   try {
     const db = await getDb()
-    const categories = db.prepare('SELECT * FROM categories ORDER BY name ASC').all()
+    const categories = await db.prepare('SELECT * FROM categories ORDER BY name ASC').all()
     return NextResponse.json({ categories })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 })
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb()
-    const result = db.prepare('INSERT INTO categories (name, slug) VALUES (?, ?)').run(name.trim(), slug.trim().toLowerCase())
+    const result = await db.prepare('INSERT INTO categories (name, slug) VALUES (?, ?)').run(name.trim(), slug.trim().toLowerCase())
 
     return NextResponse.json({ success: true, id: result.lastInsertRowid })
   } catch (error: any) {
@@ -46,7 +46,7 @@ export async function PUT(request: Request) {
     }
 
     const db = await getDb()
-    db.prepare('UPDATE categories SET name = ?, slug = ? WHERE id = ?').run(name.trim(), slug.trim().toLowerCase(), id)
+    await db.prepare('UPDATE categories SET name = ?, slug = ? WHERE id = ?').run(name.trim(), slug.trim().toLowerCase(), id)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
@@ -68,7 +68,7 @@ export async function DELETE(request: Request) {
     }
 
     const db = await getDb()
-    db.prepare('DELETE FROM categories WHERE id = ?').run(parseInt(id, 10))
+    await db.prepare('DELETE FROM categories WHERE id = ?').run(parseInt(id, 10))
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

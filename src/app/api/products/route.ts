@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDb()
-    const existing = db.prepare('SELECT id FROM products WHERE slug = ?').get(slug)
+    const existing = await db.prepare('SELECT id FROM products WHERE slug = ?').get(slug)
     if (existing) {
       return NextResponse.json(
         { error: 'Slug sudah digunakan.' },
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     `)
 
     for (const v of variants) {
-      insertVariant.run(productId, v.size || null, v.color, Number(v.stock) || 0)
+      await insertVariant.run(productId, v.size || null, v.color, Number(v.stock) || 0)
     }
 
     return NextResponse.json({

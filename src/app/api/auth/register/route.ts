@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb()
 
     // Verifikasi OTP dari database
-    const otpRecord = db.prepare('SELECT code, expires_at FROM otp_codes WHERE email = ?').get(cleanEmail) as {
+    const otpRecord = await db.prepare('SELECT code, expires_at FROM otp_codes WHERE email = ?').get(cleanEmail) as {
       code: string
       expires_at: string
     } | undefined
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hapus kode OTP setelah berhasil registrasi
-    db.prepare('DELETE FROM otp_codes WHERE email = ?').run(cleanEmail)
+    await db.prepare('DELETE FROM otp_codes WHERE email = ?').run(cleanEmail)
 
     await setAuthCookie(result.token)
 

@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       FROM orders
       ${whereSql}
     `
-    const stats = db.prepare(statsQuery).get(...filterParams) as any
+    const stats = await db.prepare(statsQuery).get(...filterParams) as any
 
     // Top Products with Filter
     let topProductsWhere = " WHERE o.status IN ('paid', 'shipped', 'completed')"
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
       ORDER BY total_sold DESC
       LIMIT 5
     `
-    const topProducts = db.prepare(topProductsQuery).all(...filterParams) as any[]
+    const topProducts = await db.prepare(topProductsQuery).all(...filterParams) as any[]
 
     // Recent Orders with Filter
     let recentWhereSql = whereSql ? whereSql.replace(/\bcreated_at\b/g, 'o.created_at').replace(/\bpurchase_type\b/g, 'o.purchase_type').replace(/\bstatus\b/g, 'o.status').replace(/\btotal_amount\b/g, 'o.total_amount') : ''
@@ -119,7 +119,7 @@ export async function GET(request: Request) {
       ORDER BY o.created_at DESC
       LIMIT 10
     `
-    const recentOrders = db.prepare(recentOrdersQuery).all(...filterParams) as any[]
+    const recentOrders = await db.prepare(recentOrdersQuery).all(...filterParams) as any[]
 
     // 4. Daily Revenue Trend Chart Data (Last 30 Days Continuous)
     const dbChartData = db.prepare(`

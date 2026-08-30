@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Check if order exists and belongs to user if orderId is provided
     if (orderId) {
-      const order = db.prepare('SELECT id, status, user_id FROM orders WHERE id = ?').get(orderId) as any
+      const order = await db.prepare('SELECT id, status, user_id FROM orders WHERE id = ?').get(orderId) as any
       if (!order || order.user_id !== user.id) {
         return NextResponse.json({ error: 'Pesanan tidak valid.' }, { status: 403 })
       }
@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
     // Check if user already reviewed this product on this order
     let existing: { id: number } | undefined
     if (orderId) {
-      existing = db.prepare('SELECT id FROM reviews WHERE user_id = ? AND product_id = ? AND order_id = ?').get(user.id, productId, orderId) as { id: number } | undefined
+      existing = await db.prepare('SELECT id FROM reviews WHERE user_id = ? AND product_id = ? AND order_id = ?').get(user.id, productId, orderId) as { id: number } | undefined
     } else {
-      existing = db.prepare('SELECT id FROM reviews WHERE user_id = ? AND product_id = ? AND order_id IS NULL').get(user.id, productId) as { id: number } | undefined
+      existing = await db.prepare('SELECT id FROM reviews WHERE user_id = ? AND product_id = ? AND order_id IS NULL').get(user.id, productId) as { id: number } | undefined
     }
 
     if (existing) {

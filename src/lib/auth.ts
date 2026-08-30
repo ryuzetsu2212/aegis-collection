@@ -108,7 +108,7 @@ export async function registerUser(
   full_name: string
 ): Promise<{ user: AuthUser; token: string } | null> {
   const db = await getDb()
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email)
+  const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(email)
   if (existing) return null
 
   const hashed = await hashPassword(password)

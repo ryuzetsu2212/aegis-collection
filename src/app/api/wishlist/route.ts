@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
     }
     const db = await getDb()
     // Check if already exists
-    const existing = db.prepare('SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?').get(user.id, productId)
+    const existing = await db.prepare('SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?').get(user.id, productId)
     if (existing) {
       return NextResponse.json({ error: 'Sudah ada di wishlist.' }, { status: 409 })
     }
-    db.prepare('INSERT INTO wishlist (user_id, product_id) VALUES (?, ?)').run(user.id, productId)
+    await db.prepare('INSERT INTO wishlist (user_id, product_id) VALUES (?, ?)').run(user.id, productId)
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (error) {
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'productId wajib diisi.' }, { status: 400 })
     }
     const db = await getDb()
-    const result = db.prepare('DELETE FROM wishlist WHERE user_id = ? AND product_id = ?').run(user.id, productId)
+    const result = await db.prepare('DELETE FROM wishlist WHERE user_id = ? AND product_id = ?').run(user.id, productId)
     if (result.changes === 0) {
       return NextResponse.json({ error: 'Tidak ditemukan.' }, { status: 404 })
     }

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb()
 
     // Cek apakah email terdaftar di tabel users (berlaku untuk semua 4 role: user/customer, admin, staff, courier)
-    const existingUser = db.prepare('SELECT id, role FROM users WHERE LOWER(email) = ?').get(cleanEmail)
+    const existingUser = await db.prepare('SELECT id, role FROM users WHERE LOWER(email) = ?').get(cleanEmail)
     if (!existingUser) {
       return NextResponse.json(
         { error: 'Email tersebut belum terdaftar dalam sistem.' },

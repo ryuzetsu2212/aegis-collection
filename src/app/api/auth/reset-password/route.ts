@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb()
 
     // Cek record OTP
-    const otpRecord = db.prepare('SELECT code, expires_at FROM otp_codes WHERE email = ?').get(cleanEmail) as { code: string; expires_at: string } | undefined
+    const otpRecord = await db.prepare('SELECT code, expires_at FROM otp_codes WHERE email = ?').get(cleanEmail) as { code: string; expires_at: string } | undefined
 
     if (!otpRecord) {
       return NextResponse.json(
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Cek apakah user ada
-    const user = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail)
+    const user = await db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail)
     if (!user) {
       return NextResponse.json(
         { error: 'Pengguna dengan email ini tidak ditemukan.' },
@@ -72,10 +72,10 @@ export async function POST(request: NextRequest) {
     const hashed = await hashPassword(newPassword)
 
     // Update password_hash pada users
-    db.prepare('UPDATE users SET password_hash = ? WHERE LOWER(email) = ?').run(hashed, cleanEmail)
+    await db.prepare('UPDATE users SET password_hash = ? WHERE LOWER(email) = ?').run(hashed, cleanEmail)
 
     // Hapus OTP setelah berhasil diganti
-    db.prepare('DELETE FROM otp_codes WHERE email = ?').run(cleanEmail)
+    await db.prepare('DELETE FROM otp_codes WHERE email = ?').run(cleanEmail)
 
     return NextResponse.json({
       message: 'Kata sandi Anda berhasil diperbarui! Silakan masuk dengan kata sandi baru.',

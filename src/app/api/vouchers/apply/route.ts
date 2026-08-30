@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb()
-    const voucher = db.prepare('SELECT * FROM vouchers WHERE code = ? AND is_active = 1').get(
+    const voucher = await db.prepare('SELECT * FROM vouchers WHERE code = ? AND is_active = 1').get(
       code.trim().toUpperCase()
     ) as DbVoucher | undefined
 

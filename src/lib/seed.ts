@@ -6,7 +6,7 @@ const SALT_ROUNDS = 10
 export async function seedDatabase() {
   const db = await getDb()
 
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }
+  const userCount = await db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }
   if (userCount.count > 0) return
 
   const hashedAdmin = bcrypt.hashSync('admin123', SALT_ROUNDS)
@@ -19,20 +19,20 @@ export async function seedDatabase() {
     VALUES (?, ?, ?, ?)
   `)
 
-  const adminId = insertUser.run('admin@toko.com', hashedAdmin, 'Administrator', 'admin').lastInsertRowid as number
-  const staffId = insertUser.run('staff@toko.com', hashedStaff, 'Staff Toko', 'staff').lastInsertRowid as number
-  const courierId = insertUser.run('kurir@toko.com', hashedCourier, 'Kurir Lapangan', 'courier').lastInsertRowid as number
-  const userId = insertUser.run('user@toko.com', hashedUser, 'User Biasa', 'user').lastInsertRowid as number
+  const adminId = await insertUser.run('admin@toko.com', hashedAdmin, 'Administrator', 'admin').lastInsertRowid as number
+  const staffId = await insertUser.run('staff@toko.com', hashedStaff, 'Staff Toko', 'staff').lastInsertRowid as number
+  const courierId = await insertUser.run('kurir@toko.com', hashedCourier, 'Kurir Lapangan', 'courier').lastInsertRowid as number
+  const userId = await insertUser.run('user@toko.com', hashedUser, 'User Biasa', 'user').lastInsertRowid as number
 
   const insertCategory = db.prepare(`
     INSERT INTO categories (name, slug) VALUES (?, ?)
   `)
 
-  const catKaos = insertCategory.run('Kaos', 'kaos').lastInsertRowid as number
-  const catKemeja = insertCategory.run('Kemeja', 'kemeja').lastInsertRowid as number
-  const catJaket = insertCategory.run('Jaket', 'jaket').lastInsertRowid as number
-  const catCelana = insertCategory.run('Celana', 'celana').lastInsertRowid as number
-  const catSweater = insertCategory.run('Sweater & Hoodie', 'sweater-hoodie').lastInsertRowid as number
+  const catKaos = await insertCategory.run('Kaos', 'kaos').lastInsertRowid as number
+  const catKemeja = await insertCategory.run('Kemeja', 'kemeja').lastInsertRowid as number
+  const catJaket = await insertCategory.run('Jaket', 'jaket').lastInsertRowid as number
+  const catCelana = await insertCategory.run('Celana', 'celana').lastInsertRowid as number
+  const catSweater = await insertCategory.run('Sweater & Hoodie', 'sweater-hoodie').lastInsertRowid as number
 
   const insertProduct = db.prepare(`
     INSERT INTO products (category_id, title, slug, description, price, image_url, is_active)
@@ -336,7 +336,7 @@ export async function seedDatabase() {
   ]
 
   for (const p of products) {
-    const result = insertProduct.run(
+    const result = await insertProduct.run(
       p.category_id,
       p.title,
       p.slug,
@@ -347,7 +347,7 @@ export async function seedDatabase() {
     )
     const productId = result.lastInsertRowid as number
     for (const v of p.variants) {
-      insertVariant.run(productId, v.size, v.color, v.stock)
+      await insertVariant.run(productId, v.size, v.color, v.stock)
     }
   }
 

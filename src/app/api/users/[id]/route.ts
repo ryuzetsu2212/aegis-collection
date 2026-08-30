@@ -17,7 +17,7 @@ export async function PUT(
     }
 
     const db = await getDb()
-    const targetUser = db.prepare('SELECT id, email, role FROM users WHERE id = ?').get(userId) as any
+    const targetUser = await db.prepare('SELECT id, email, role FROM users WHERE id = ?').get(userId) as any
     if (!targetUser) {
       return NextResponse.json({ error: 'User tidak ditemukan.' }, { status: 404 })
     }
@@ -32,7 +32,7 @@ export async function PUT(
       )
     }
 
-    db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId)
+    await db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId)
 
     await logAudit({
       user: adminUser,
@@ -79,12 +79,12 @@ export async function DELETE(
     }
 
     const db = await getDb()
-    const targetUser = db.prepare('SELECT id, email, role FROM users WHERE id = ?').get(userId) as any
+    const targetUser = await db.prepare('SELECT id, email, role FROM users WHERE id = ?').get(userId) as any
     if (!targetUser) {
       return NextResponse.json({ error: 'User tidak ditemukan.' }, { status: 404 })
     }
 
-    db.prepare('DELETE FROM users WHERE id = ?').run(userId)
+    await db.prepare('DELETE FROM users WHERE id = ?').run(userId)
 
     await logAudit({
       user: adminUser,

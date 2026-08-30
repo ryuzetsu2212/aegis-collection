@@ -5,7 +5,7 @@ import { getDb } from '@/lib/db'
 export async function GET() {
   try {
     const db = await getDb()
-    const banners = db.prepare('SELECT * FROM banners ORDER BY position ASC, created_at DESC').all()
+    const banners = await db.prepare('SELECT * FROM banners ORDER BY position ASC, created_at DESC').all()
     return NextResponse.json({ banners })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 })
@@ -55,7 +55,7 @@ export async function PUT(request: Request) {
     }
 
     const db = await getDb()
-    db.prepare('UPDATE banners SET is_active = ? WHERE id = ?').run(is_active ? 1 : 0, id)
+    await db.prepare('UPDATE banners SET is_active = ? WHERE id = ?').run(is_active ? 1 : 0, id)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
@@ -75,7 +75,7 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: 'ID wajib diisi' }, { status: 400 })
 
     const db = await getDb()
-    db.prepare('DELETE FROM banners WHERE id = ?').run(parseInt(id, 10))
+    await db.prepare('DELETE FROM banners WHERE id = ?').run(parseInt(id, 10))
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

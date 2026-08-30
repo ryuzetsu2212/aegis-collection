@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       INSERT INTO returns (order_id, user_id, reason, details, photo_url, status)
       VALUES (?, ?, ?, ?, ?, 'pending')
     `)
-    const result = insertStmt.run(
+    const result = await insertStmt.run(
       order_id,
       user.id,
       reason.trim(),
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     )
 
     const returnId = result.lastInsertRowid as number
-    const newReturn = db.prepare('SELECT * FROM returns WHERE id = ?').get(returnId)
+    const newReturn = await db.prepare('SELECT * FROM returns WHERE id = ?').get(returnId)
 
     await logAudit({
       user,

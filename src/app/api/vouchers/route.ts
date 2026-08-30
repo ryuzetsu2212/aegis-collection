@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const db = await getDb()
-    const vouchers = db.prepare('SELECT * FROM vouchers ORDER BY created_at DESC').all()
+    const vouchers = await db.prepare('SELECT * FROM vouchers ORDER BY created_at DESC').all()
     return NextResponse.json({ vouchers })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 })
@@ -67,7 +67,7 @@ export async function PUT(request: Request) {
     const db = await getDb()
 
     if (is_active !== undefined && code === undefined) {
-      db.prepare('UPDATE vouchers SET is_active = ? WHERE id = ?').run(is_active ? 1 : 0, id)
+      await db.prepare('UPDATE vouchers SET is_active = ? WHERE id = ?').run(is_active ? 1 : 0, id)
     } else {
       if (!code || discount_value === undefined) {
         return NextResponse.json({ error: 'Kode voucher dan Nilai diskon wajib diisi' }, { status: 400 })
@@ -106,7 +106,7 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: 'ID wajib diisi' }, { status: 400 })
 
     const db = await getDb()
-    db.prepare('DELETE FROM vouchers WHERE id = ?').run(parseInt(id, 10))
+    await db.prepare('DELETE FROM vouchers WHERE id = ?').run(parseInt(id, 10))
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

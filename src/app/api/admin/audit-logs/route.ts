@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : ''
 
     const countQuery = `SELECT COUNT(*) as total FROM audit_logs ${whereClause}`
-    const totalRow = db.prepare(countQuery).get(...params) as { total: number }
+    const totalRow = await db.prepare(countQuery).get(...params) as { total: number }
     const total = totalRow ? totalRow.total : 0
 
     const query = `
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
     `
-    const logs = db.prepare(query).all(...params, limit, offset)
+    const logs = await db.prepare(query).all(...params, limit, offset)
 
     return NextResponse.json({
       logs,

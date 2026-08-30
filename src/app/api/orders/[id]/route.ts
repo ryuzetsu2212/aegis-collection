@@ -94,7 +94,7 @@ export async function PUT(
     }
 
     const db = await getDb()
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId) as any
+    const order = await db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId) as any
     if (!order) {
       return NextResponse.json({ error: 'Pesanan tidak ditemukan.' }, { status: 404 })
     }
@@ -224,7 +224,7 @@ export async function PUT(
 
     paramsArr.push(orderId)
     const query = `UPDATE orders SET ${updates.join(', ')} WHERE id = ?`
-    db.prepare(query).run(...paramsArr)
+    await db.prepare(query).run(...paramsArr)
 
     // Audit Log recording for order updates (admin, staff, courier, or user/buyer)
     const isCourierAssignment = body.courier_name !== undefined || body.tracking_number !== undefined || body.courier_phone !== undefined
@@ -250,12 +250,12 @@ export async function PUT(
 
     // Restore stock & voucher if order status changed to cancelled from non-cancelled
     if (paramsArr.includes('cancelled') && order.status !== 'cancelled') {
-      const items = db.prepare('SELECT variant_id, quantity FROM order_items WHERE order_id = ?').all(orderId) as any[]
+      const items = await db.prepare('SELECT variant_id, quantity FROM order_items WHERE order_id = ?').all(orderId) as any[]
       for (const item of items) {
-        db.prepare('UPDATE product_variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id)
+        await db.prepare('UPDATE product_variants SET stock = stock + ? WHERE id = ?').run(item.quantity, item.variant_id)
       }
       if (order.voucher_code) {
-        db.prepare('UPDATE vouchers SET used_count = MAX(0, used_count - 1) WHERE code = ?').run(order.voucher_code)
+        await db.prepare('UPDATE vouchers SET used_count = MAX(0, used_count - 1) WHERE code = ?').run(order.voucher_code)
       }
     }
 
@@ -285,7 +285,7 @@ export async function DELETE(
     }
 
     const db = await getDb()
-    const order = db.prepare('SELECT id, status FROM orders WHERE id = ?').get(orderId) as { id: number; status: string } | undefined
+    const order = await db.prepare('SELECT id, status FROM orders WHERE id = ?').get(orderId) as { id: number; status: string } | undefined
     if (!order) {
       return NextResponse.json({ error: 'Pesanan tidak ditemukan.' }, { status: 404 })
     }
@@ -297,8 +297,8 @@ export async function DELETE(
       )
     }
 
-    db.prepare('DELETE FROM order_items WHERE order_id = ?').run(orderId)
-    db.prepare('DELETE FROM orders WHERE id = ?').run(orderId)
+    await db.prepare('DELETE FROM order_items WHERE order_id = ?').run(orderId)
+    await db.prepare('DELETE FROM orders WHERE id = ?').run(orderId)
 
     return NextResponse.json({ success: true, message: 'Pesanan berhasil dihapus.' })
   } catch (error) {

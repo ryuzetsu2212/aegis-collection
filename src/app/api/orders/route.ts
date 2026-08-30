@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
     )
 
     if (voucher_code && validDiscount > 0) {
-      db.prepare('UPDATE vouchers SET used_count = used_count + 1 WHERE code = ?').run(
+      await db.prepare('UPDATE vouchers SET used_count = used_count + 1 WHERE code = ?').run(
         String(voucher_code).trim().toUpperCase()
       )
     }

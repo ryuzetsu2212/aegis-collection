@@ -17,7 +17,7 @@ export async function PUT(
     }
 
     const db = await getDb()
-    const returnItem = db.prepare('SELECT * FROM returns WHERE id = ?').get(returnId) as any
+    const returnItem = await db.prepare('SELECT * FROM returns WHERE id = ?').get(returnId) as any
 
     if (!returnItem) {
       return NextResponse.json({ error: 'Pengajuan retur tidak ditemukan.' }, { status: 404 })
@@ -36,7 +36,7 @@ export async function PUT(
       WHERE id = ?
     `).run(status, admin_notes ? admin_notes.trim() : null, returnId)
 
-    const updated = db.prepare('SELECT * FROM returns WHERE id = ?').get(returnId)
+    const updated = await db.prepare('SELECT * FROM returns WHERE id = ?').get(returnId)
 
     const action = status === 'approved' ? 'RETURN_APPROVED' : 'RETURN_STATUS_UPDATED'
     await logAudit({

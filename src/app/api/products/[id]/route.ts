@@ -73,13 +73,13 @@ export async function PUT(
     const db = await getDb()
 
     // Check if product exists
-    const existing = db.prepare('SELECT id FROM products WHERE id = ?').get(productId)
+    const existing = await db.prepare('SELECT id FROM products WHERE id = ?').get(productId)
     if (!existing) {
       return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 })
     }
 
     // Check slug uniqueness for other products
-    const slugCheck = db.prepare('SELECT id FROM products WHERE slug = ? AND id != ?').get(slug, productId)
+    const slugCheck = await db.prepare('SELECT id FROM products WHERE slug = ? AND id != ?').get(slug, productId)
     if (slugCheck) {
       return NextResponse.json({ error: 'Slug sudah digunakan oleh produk lain.' }, { status: 409 })
     }
@@ -101,7 +101,7 @@ export async function PUT(
     )
 
     // Delete existing variants and re-insert
-    db.prepare('DELETE FROM product_variants WHERE product_id = ?').run(productId)
+    await db.prepare('DELETE FROM product_variants WHERE product_id = ?').run(productId)
 
     const insertVariant = db.prepare(`
       INSERT INTO product_variants (product_id, size, color, stock)
@@ -109,7 +109,7 @@ export async function PUT(
     `)
 
     for (const v of variants) {
-      insertVariant.run(productId, v.size || null, v.color || 'Standard', Number(v.stock) || 0)
+      await insertVariant.run(productId, v.size || null, v.color || 'Standard', Number(v.stock) || 0)
     }
 
     return NextResponse.json({ message: 'Produk berhasil diperbarui.' })
@@ -138,24 +138,24 @@ export async function DELETE(
 
     const db = await getDb()
 
-    const existing = db.prepare('SELECT id FROM products WHERE id = ?').get(productId)
+    const existing = await db.prepare('SELECT id FROM products WHERE id = ?').get(productId)
     if (!existing) {
       return NextResponse.json({ error: 'Produk tidak ditemukan.' }, { status: 404 })
     }
 
     // Get variant IDs to clean up order_items if any
-    const variantRows = db.prepare('SELECT id FROM product_variants WHERE product_id = ?').all(productId) as { id: number }[]
+    const variantRows = await db.prepare('SELECT id FROM product_variants WHERE product_id = ?').all(productId) as { id: number }[]
     const variantIds = variantRows.map(v => v.id)
 
     if (variantIds.length > 0) {
       const placeholders = variantIds.map(() => '?').join(',')
-      db.prepare(`DELETE FROM order_items WHERE variant_id IN (${placeholders})`).run(...variantIds)
+      await db.prepare(`DELETE FROM order_items WHERE variant_id IN (${placeholders})`).run(...variantIds)
     }
 
-    db.prepare('DELETE FROM wishlist WHERE product_id = ?').run(productId)
-    db.prepare('DELETE FROM reviews WHERE product_id = ?').run(productId)
-    db.prepare('DELETE FROM product_variants WHERE product_id = ?').run(productId)
-    db.prepare('DELETE FROM products WHERE id = ?').run(productId)
+    await db.prepare('DELETE FROM wishlist WHERE product_id = ?').run(productId)
+    await db.prepare('DELETE FROM reviews WHERE product_id = ?').run(productId)
+    await db.prepare('DELETE FROM product_variants WHERE product_id = ?').run(productId)
+    await db.prepare('DELETE FROM products WHERE id = ?').run(productId)
 
     return NextResponse.json({ message: 'Produk berhasil dihapus.' })
   } catch (error) {
