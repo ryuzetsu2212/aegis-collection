@@ -59,7 +59,8 @@ export async function getDb(): Promise<any> {
         get(...params: any[]): any {
           return execSql(sql, params).then(res => {
             if (Array.isArray(res)) return res[0] ?? undefined
-            return res ?? undefined
+            if (res && typeof res === 'object' && !('success' in res && Object.keys(res).length === 1)) return res
+            return undefined
           })
         },
         all(...params: any[]): any {
