@@ -1,25 +1,28 @@
 /**
- * Automatically compress image files on the client side
- * if their file size exceeds maxSizeBytes (default 5MB) or to optimize dimensions.
+ * Client-side image compression utility.
+ * - Files < 5MB: Light, high-quality compression (quality 0.92, max dimension 2400px)
+ *   to optimize file size while keeping pristine clarity ("tidak burik").
+ * - Files >= 5MB: Progressive compression (quality 0.85 down to 0.25, max dimension 2048px)
+ *   to guarantee file size stays under 5MB for upload.
+ * - Animated GIFs are preserved without compression.
  */
 export async function compressImageIfNeeded(
   file: File,
   maxSizeBytes: number = 5 * 1024 * 1024,
-  maxDimension: number = 2048
+  maxDimension: number = 2400
 ): Promise<File> {
   if (!file || typeof window === 'undefined' || !file.type.startsWith('image/')) {
     return file
   }
 
-  // Skip animated GIFs
+  // Skip animated GIFs to preserve animation frames
   if (file.type === 'image/gif') {
     return file
   }
 
-  // If already under size limit, return original file
-  if (file.size <= maxSizeBytes) {
-    return file
-  }
+  const isLargeFile = file.size > maxSizeBytes
+  const initialQuality = isLargeFile ? 0.85 : 0.92
+  const targetDimension = isLargeFile ? 2048 : Math.min(maxDimension, 2400)
 
   return new Promise<File>((resolve) => {
     const reader = new FileReader()
@@ -30,14 +33,14 @@ export async function compressImageIfNeeded(
           let width = img.width
           let height = img.height
 
-          // Resize if width or height > maxDimension
-          if (width > maxDimension || height > maxDimension) {
+          // Resize if width or height exceeds targetDimension
+          if (width > targetDimension || height > targetDimension) {
             if (width > height) {
-              height = Math.round((height * maxDimension) / width)
-              width = maxDimension
+              height = Math.round((height * targetDimension) / width)
+              width = targetDimension
             } else {
-              width = Math.round((width * maxDimension) / height)
-              height = maxDimension
+              width = Math.round((width * targetDimension) / height)
+              height = targetDimension
             }
           }
 
@@ -51,6 +54,9 @@ export async function compressImageIfNeeded(
             return
           }
 
+          // Use high quality image rendering
+          ctx.imageSmoothingEnabled = true
+          ctx.imageSmoothingQuality = 'high'
           ctx.drawImage(img, 0, 0, width, height)
 
           const mimeType = 'image/jpeg'
@@ -62,6 +68,23 @@ export async function compressImageIfNeeded(
                   return
                 }
 
+                if (!isLargeFile) {
+                  // For files < 5MB, use compressed blob if smaller than original file
+                  if (blob.size < file.size) {
+                    const baseName = file.name.replace(/\.[^/.]+$/, '')
+                    const newFileName = `${baseName}.jpg`
+                    const compressedFile = new File([blob], newFileName, {
+                      type: mimeType,
+                      lastModified: Date.now(),
+                    })
+                    resolve(compressedFile)
+                  } else {
+                    resolve(file)
+                  }
+                  return
+                }
+
+                // For large files (>= 5MB), compress until <= maxSizeBytes or quality limit
                 if (blob.size <= maxSizeBytes || quality <= 0.25) {
                   const baseName = file.name.replace(/\.[^/.]+$/, '')
                   const newFileName = `${baseName}.jpg`
@@ -79,7 +102,7 @@ export async function compressImageIfNeeded(
             )
           }
 
-          attemptCompress(0.85)
+          attemptCompress(initialQuality)
         } catch {
           resolve(file)
         }
@@ -93,4 +116,3 @@ export async function compressImageIfNeeded(
     reader.readAsDataURL(file)
   })
 }
-

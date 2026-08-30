@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { MessageSquare, X, Send, Bot, User, Sparkles, Smile, ImagePlus, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { formatChatTime } from '@/lib/formatDate'
+import { compressImageIfNeeded } from '@/lib/imageCompressor'
 
 interface Message {
   id: number
@@ -118,8 +119,9 @@ export function ChatWidget() {
 
     setIsUploadingImage(true)
     try {
+      const compressedFile = await compressImageIfNeeded(file)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', compressedFile)
 
       const uploadRes = await fetch('/api/upload', {
         method: 'POST',

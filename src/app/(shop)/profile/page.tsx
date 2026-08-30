@@ -9,6 +9,7 @@ import { User, Mail, Phone, MapPin, KeyRound, Shield, CheckCircle2, AlertCircle,
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useCartStore } from '@/lib/store/useCartStore'
+import { compressImageIfNeeded } from '@/lib/imageCompressor'
 
 const AVATAR_PRESETS = [
   { id: 'avatar-1', title: 'Casual Boy 2D', url: '/avatars/avatar-1.svg' },
@@ -213,8 +214,9 @@ export default function ProfilePage() {
     setProfileError(null)
 
     try {
+      const compressedFile = await compressImageIfNeeded(file)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', compressedFile)
 
       const res = await fetch('/api/upload', {
         method: 'POST',

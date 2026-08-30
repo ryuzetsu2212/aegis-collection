@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { MessageSquare, User, Send, Search, CheckCheck, RefreshCw, ShieldCheck, Smile, ImagePlus, Loader2, X } from 'lucide-react'
 import { formatChatTime } from '@/lib/formatDate'
+import { compressImageIfNeeded } from '@/lib/imageCompressor'
 
 interface Room {
   room_user_id: number
@@ -150,8 +151,9 @@ export default function StaffChatPage() {
 
     setIsUploadingImage(true)
     try {
+      const compressedFile = await compressImageIfNeeded(file)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', compressedFile)
 
       const uploadRes = await fetch('/api/upload', {
         method: 'POST',

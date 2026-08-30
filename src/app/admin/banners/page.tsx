@@ -15,6 +15,8 @@ interface Banner {
   position: number
 }
 
+import { compressImageIfNeeded } from '@/lib/imageCompressor'
+
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<Banner[]>([])
   const [title, setTitle] = useState('')
@@ -48,8 +50,9 @@ export default function AdminBannersPage() {
     setUploading(true)
     setError(null)
     try {
+      const compressedFile = await compressImageIfNeeded(file)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', compressedFile)
 
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('Gagal upload banner image')

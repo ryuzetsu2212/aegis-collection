@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Upload, X, Loader2 } from 'lucide-react'
+import { compressImageIfNeeded } from '@/lib/imageCompressor'
 
 interface UploadProductImageProps {
   value?: string
@@ -15,10 +16,10 @@ export function UploadProductImage({ value, onChange, disabled }: UploadProductI
   const [error, setError] = useState<string | null>(null)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
 
-    if (!file.type.startsWith('image/')) {
+    if (!rawFile.type.startsWith('image/')) {
       setError('File harus berupa gambar.')
       return
     }
@@ -27,6 +28,7 @@ export function UploadProductImage({ value, onChange, disabled }: UploadProductI
       setUploading(true)
       setError(null)
 
+      const file = await compressImageIfNeeded(rawFile)
       const formData = new FormData()
       formData.append('file', file)
 
