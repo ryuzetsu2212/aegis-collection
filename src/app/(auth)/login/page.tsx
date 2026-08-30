@@ -55,7 +55,7 @@ function LoginForm() {
   }
   
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-zinc-950">
       <div className="w-full max-w-md">
         <div className="bg-white border border-zinc-200 rounded-xl p-8">
           <div className="text-center mb-8">
