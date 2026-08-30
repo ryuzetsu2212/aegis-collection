@@ -1039,47 +1039,37 @@ export default function CheckoutPage() {
                       Upload Bukti Pembayaran (Foto/Screenshot)
                     </label>
                     {paymentProofUrl ? (
-                      <div className="space-y-2">
-                        {/* Preview thumbnail area - click to see full */}
-                        <div
-                          className="relative w-full rounded-xl overflow-hidden border-2 border-emerald-300 cursor-zoom-in group"
+                      <div className="flex items-center gap-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                        <button
+                          type="button"
                           onClick={() => setShowProofPreview(true)}
-                          style={{ maxHeight: '200px' }}
+                          className="w-16 h-16 relative rounded-md overflow-hidden border border-emerald-300 shrink-0 hover:opacity-80 transition-opacity cursor-zoom-in"
+                          title="Klik untuk melihat foto penuh"
                         >
-                          <img
-                            src={paymentProofUrl}
-                            alt="Bukti Transfer"
-                            className="w-full object-contain max-h-[200px] bg-zinc-50"
-                          />
-                          {/* Overlay hint */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                            <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                              </svg>
-                              Klik untuk Perbesar
-                            </span>
+                          <Image src={paymentProofUrl} alt="Bukti Transfer" fill className="object-cover" unoptimized />
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+                            <span className="text-white text-[9px] font-bold opacity-0 hover:opacity-100 bg-black/50 px-1 rounded">Lihat</span>
                           </div>
-                        </div>
-                        {/* Status + actions */}
-                        <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-                          <p className="text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
-                            <CheckCircle2 className="h-4 w-4" /> Bukti Terunggah
+                        </button>
+                        <div className="flex-1">
+                          <p className="text-xs font-semibold text-emerald-800 flex items-center gap-1">
+                            <CheckCircle2 className="h-4 w-4" /> Bukti Pembayaran Terunggah
                           </p>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3 mt-1">
                             <button
                               type="button"
                               onClick={() => setShowProofPreview(true)}
-                              className="text-[11px] bg-blue-600 text-white font-semibold px-2.5 py-1 rounded-md hover:bg-blue-700 transition-colors"
+                              className="text-[11px] text-blue-600 underline font-medium"
                             >
-                              🔍 Lihat Foto
+                              Lihat Foto
                             </button>
+                            <span className="text-zinc-300">|</span>
                             <button
                               type="button"
                               onClick={() => setPaymentProofUrl(null)}
-                              className="text-[11px] text-red-600 border border-red-300 font-semibold px-2.5 py-1 rounded-md hover:bg-red-50 transition-colors"
+                              className="text-[11px] text-red-600 underline font-medium"
                             >
-                              Ganti
+                              Ganti Foto
                             </button>
                           </div>
                         </div>

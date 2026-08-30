@@ -75,6 +75,7 @@ export default function CourierDashboardPage() {
   const [updatingId, setUpdatingId] = useState<number | null>(null)
   const [uploadingProofId, setUploadingProofId] = useState<number | null>(null)
   const [updatingReturnId, setUpdatingReturnId] = useState<number | null>(null)
+  const [previewProofUrl, setPreviewProofUrl] = useState<string | null>(null)
 
   const handleMarkReturnReceived = async (returnId: number, orderId: number) => {
     setUpdatingReturnId(returnId)
@@ -648,22 +649,49 @@ export default function CourierDashboardPage() {
                       </div>
 
                       {order.payment_proof_url ? (
-                        <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-purple-200 shadow-xs">
-                          <div className="w-14 h-14 relative rounded-lg overflow-hidden border border-zinc-200 shrink-0">
-                            <Image src={order.payment_proof_url} alt="Bukti COD" fill className="object-cover" unoptimized />
+                        <div className="space-y-2">
+                          {/* Thumbnail besar - klik untuk preview */}
+                          <div
+                            className="relative w-full rounded-xl overflow-hidden border-2 border-purple-300 cursor-zoom-in group"
+                            onClick={() => setPreviewProofUrl(order.payment_proof_url!)}
+                            style={{ maxHeight: '200px' }}
+                          >
+                            <img
+                              src={order.payment_proof_url}
+                              alt="Bukti COD"
+                              className="w-full object-contain max-h-[200px] bg-zinc-50"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                              <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                                Klik untuk Perbesar
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-zinc-900 truncate">Bukti Pembayaran COD Tersimpan</p>
-                            <label className="inline-block mt-1 text-[11px] text-purple-700 hover:underline cursor-pointer font-bold">
-                              <span>📷 Ganti Foto Bukti COD</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleUploadCodProof(order.id, e)}
-                                disabled={uploadingProofId === order.id}
-                                className="hidden"
-                              />
-                            </label>
+                          {/* Status + actions */}
+                          <div className="flex items-center justify-between p-2.5 bg-white border border-purple-200 rounded-lg">
+                            <p className="text-xs font-bold text-zinc-900">Bukti COD Tersimpan</p>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setPreviewProofUrl(order.payment_proof_url!)}
+                                className="text-[11px] bg-blue-600 text-white font-semibold px-2.5 py-1 rounded-md hover:bg-blue-700 transition-colors"
+                              >
+                                🔍 Lihat Foto
+                              </button>
+                              <label className="text-[11px] text-purple-700 border border-purple-300 font-semibold px-2.5 py-1 rounded-md hover:bg-purple-50 transition-colors cursor-pointer">
+                                📷 Ganti
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleUploadCodProof(order.id, e)}
+                                  disabled={uploadingProofId === order.id}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -795,6 +823,40 @@ export default function CourierDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Lightbox Modal Preview Bukti COD */}
+      {previewProofUrl && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setPreviewProofUrl(null)}
+        >
+          <div
+            className="relative max-w-lg w-full max-h-[90vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between w-full mb-3">
+              <p className="text-white text-sm font-semibold">Bukti Pembayaran COD</p>
+              <button
+                type="button"
+                onClick={() => setPreviewProofUrl(null)}
+                className="text-white bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-zinc-900">
+              <img
+                src={previewProofUrl}
+                alt="Bukti COD Penuh"
+                className="w-full h-auto max-h-[75vh] object-contain"
+              />
+            </div>
+            <p className="text-zinc-400 text-[11px] mt-3">Ketuk di luar foto untuk menutup</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
