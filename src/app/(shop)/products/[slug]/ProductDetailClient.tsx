@@ -550,6 +550,7 @@ export function ProductDetailClient({
                   category={relProduct.category_name || undefined}
                   rating={relProduct.average_rating}
                   totalReviews={relProduct.total_reviews}
+                  totalSold={relProduct.total_sold}
                 />
               ))}
             </div>

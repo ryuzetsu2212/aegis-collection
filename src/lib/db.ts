@@ -391,17 +391,18 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
       let { data, error } = await query
       if (error) throw new Error(error.message)
 
+      const { data: sales } = await supabase.from('order_items').select('quantity, product_variants!inner(product_id)')
+      const salesMap: Record<number, number> = {}
+      if (sales) {
+        sales.forEach((s: any) => {
+          const pId = Number(s.product_variants?.product_id)
+          if (pId) {
+            salesMap[pId] = (salesMap[pId] || 0) + (Number(s.quantity) || 0)
+          }
+        })
+      }
+
       if (isBestSellerSort && data) {
-        const { data: sales } = await supabase.from('order_items').select('quantity, product_variants!inner(product_id)')
-        const salesMap: Record<number, number> = {}
-        if (sales) {
-          sales.forEach((s: any) => {
-            const pId = Number(s.product_variants?.product_id)
-            if (pId) {
-              salesMap[pId] = (salesMap[pId] || 0) + (Number(s.quantity) || 0)
-            }
-          })
-        }
         data = [...data].sort((a: any, b: any) => (salesMap[Number(b.id)] || 0) - (salesMap[Number(a.id)] || 0))
         if (cleanSql.includes('LIMIT ? OFFSET ?')) {
           const limitNum = params[params.length - 2]
@@ -437,7 +438,8 @@ async function execSql(sql: string, params: any[] = []): Promise<any> {
           category_name: p.categories?.name || null,
           category_slug: p.categories?.slug || null,
           average_rating: stats.count > 0 ? Number((stats.sum / stats.count).toFixed(1)) : 0,
-          total_reviews: stats.count
+          total_reviews: stats.count,
+          total_sold: salesMap[pid] || 0,
         }
       })
     }

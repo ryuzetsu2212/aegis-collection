@@ -15,6 +15,7 @@ interface ProductWithCategory {
   category_name: string | null
   average_rating?: number
   total_reviews?: number
+  total_sold?: number
 }
 
 export default async function HomePage({
@@ -182,6 +183,7 @@ export default async function HomePage({
                   category={product.category_name || undefined}
                   rating={product.average_rating}
                   totalReviews={product.total_reviews}
+                  totalSold={product.total_sold}
                 />
               ))}
             </div>
