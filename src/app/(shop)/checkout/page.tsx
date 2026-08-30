@@ -1040,7 +1040,7 @@ export default function CheckoutPage() {
                     {paymentProofUrl ? (
                       <div className="flex items-center gap-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
                         <div className="w-16 h-16 relative rounded-md overflow-hidden border border-emerald-300 shrink-0">
-                          <Image src={paymentProofUrl} alt="Bukti Transfer" fill className="object-cover" />
+                          <Image src={paymentProofUrl} alt="Bukti Transfer" fill className="object-cover" unoptimized />
                         </div>
                         <div className="flex-1">
                           <p className="text-xs font-semibold text-emerald-800 flex items-center gap-1">

@@ -481,7 +481,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               {order.payment_proof_url ? (
                 <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
                   <div className="w-16 h-16 relative rounded overflow-hidden shrink-0 border">
-                    <Image src={order.payment_proof_url} alt="Bukti Transfer" fill className="object-cover" />
+                    <Image src={order.payment_proof_url} alt="Bukti Transfer" fill className="object-cover" unoptimized />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-emerald-700 flex items-center gap-1">

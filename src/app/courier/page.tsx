@@ -650,7 +650,7 @@ export default function CourierDashboardPage() {
                       {order.payment_proof_url ? (
                         <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-purple-200 shadow-xs">
                           <div className="w-14 h-14 relative rounded-lg overflow-hidden border border-zinc-200 shrink-0">
-                            <Image src={order.payment_proof_url} alt="Bukti COD" fill className="object-cover" />
+                            <Image src={order.payment_proof_url} alt="Bukti COD" fill className="object-cover" unoptimized />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-zinc-900 truncate">Bukti Pembayaran COD Tersimpan</p>

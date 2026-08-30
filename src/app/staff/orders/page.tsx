@@ -430,7 +430,7 @@ export default function StaffOrdersPage() {
                               }}
                               className="group relative w-14 h-14 rounded-lg overflow-hidden border border-zinc-200 hover:border-orange-500 transition-all shadow-xs block cursor-pointer"
                             >
-                              <Image src={r.photo_url} alt="Bukti Retur" fill className="object-cover" />
+                              <Image src={r.photo_url} alt="Bukti Retur" fill className="object-cover" unoptimized />
                               <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center text-white">
                                 <Eye className="h-4 w-4" />
                               </div>
@@ -838,7 +838,7 @@ export default function StaffOrdersPage() {
               </div>
 
               <div className="relative aspect-[4/3] w-full bg-zinc-100 rounded-xl overflow-hidden border">
-                <Image src={selectedProof} alt={proofModalTitle} fill className="object-contain" />
+                <Image src={selectedProof} alt={proofModalTitle} fill className="object-contain" unoptimized />
               </div>
 
               <div className="pt-2 flex justify-end">
