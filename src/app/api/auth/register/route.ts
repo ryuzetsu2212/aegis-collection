@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { registerUser, setAuthCookie } from '@/lib/auth'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 const otpVerifyLimiter = {
@@ -47,13 +47,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const db = await getDb()
+    const supabase = getSupabase()
 
-    // Verifikasi OTP dari database
-    const otpRecord = await db.prepare('SELECT code, expires_at FROM otp_codes WHERE email = ?').get(cleanEmail) as {
-      code: string
-      expires_at: string
-    } | undefined
+    // Verifikasi OTP dari Supabase
+    const { data: otpRecord, error: otpErr } = await supabase
+      .from('otp_codes')
+      .select('code, expires_at')
+      .eq('email', cleanEmail)
+      .maybeSingle()
+
+    if (otpErr) {
+      console.error('Error fetching OTP record:', otpErr)
+    }
 
     if (!otpRecord) {
       return NextResponse.json(
@@ -86,7 +91,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Hapus kode OTP setelah berhasil registrasi
-    await db.prepare('DELETE FROM otp_codes WHERE email = ?').run(cleanEmail)
+    await supabase
+      .from('otp_codes')
+      .delete()
+      .eq('email', cleanEmail)
 
     await setAuthCookie(result.token)
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -33,10 +33,18 @@ export async function POST(request: NextRequest) {
     const cleanEmail = email.trim().toLowerCase()
     const cleanOtp = otp.trim()
 
-    const db = await getDb()
+    const supabase = getSupabase()
 
-    // Cek record OTP
-    const otpRecord = await db.prepare('SELECT code, expires_at FROM otp_codes WHERE email = ?').get(cleanEmail) as { code: string; expires_at: string } | undefined
+    // Cek record OTP dari Supabase
+    const { data: otpRecord, error: otpErr } = await supabase
+      .from('otp_codes')
+      .select('code, expires_at')
+      .eq('email', cleanEmail)
+      .maybeSingle()
+
+    if (otpErr) {
+      console.error('Error fetching OTP record:', otpErr)
+    }
 
     if (!otpRecord) {
       return NextResponse.json(
@@ -60,8 +68,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Cek apakah user ada
-    const user = await db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail)
-    if (!user) {
+    const { data: user, error: userErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle()
+
+    if (userErr || !user) {
       return NextResponse.json(
         { error: 'Pengguna dengan email ini tidak ditemukan.' },
         { status: 404 }
@@ -72,10 +85,24 @@ export async function POST(request: NextRequest) {
     const hashed = await hashPassword(newPassword)
 
     // Update password_hash pada users
-    await db.prepare('UPDATE users SET password_hash = ? WHERE LOWER(email) = ?').run(hashed, cleanEmail)
+    const { error: updateErr } = await supabase
+      .from('users')
+      .update({ password_hash: hashed })
+      .eq('email', cleanEmail)
+
+    if (updateErr) {
+      console.error('Error updating user password:', updateErr)
+      return NextResponse.json(
+        { error: 'Gagal memperbarui kata sandi.' },
+        { status: 500 }
+      )
+    }
 
     // Hapus OTP setelah berhasil diganti
-    await db.prepare('DELETE FROM otp_codes WHERE email = ?').run(cleanEmail)
+    await supabase
+      .from('otp_codes')
+      .delete()
+      .eq('email', cleanEmail)
 
     return NextResponse.json({
       message: 'Kata sandi Anda berhasil diperbarui! Silakan masuk dengan kata sandi baru.',
@@ -88,4 +115,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
