@@ -83,10 +83,7 @@ export async function GET(request: NextRequest) {
     if (whereClauses.length > 0) {
       countQuery += ' WHERE ' + whereClauses.join(' AND ')
     }
-    const countStmt = db.prepare(countQuery)
-    const totalRow = (await countStmt.get(...params)) as { total: number } | undefined
-    const total = totalRow?.total ?? 0
-
+    // Paralelkan count + query utama (sebelumnya berurutan).
     const sort = searchParams.get('sort')
     if (sort === 'bestseller') {
       query += ` ORDER BY p.created_at DESC /* bestseller */`
@@ -98,23 +95,31 @@ export async function GET(request: NextRequest) {
       query += ` ORDER BY p.created_at DESC`
     }
 
-    query += ` LIMIT ? OFFSET ?`
-    params.push(limit, offset)
+    const [totalRow, rawRows] = await Promise.all([
+      db.prepare(countQuery).get(...params),
+      db.prepare(query + ` LIMIT ? OFFSET ?`).all(...params, limit, offset),
+    ])
+    const total = (totalRow as { total: number } | undefined)?.total ?? 0
 
-    const stmt = db.prepare(query)
-    const rawRows = (await stmt.all(...params))
     const rows = (Array.isArray(rawRows) ? rawRows : []) as any[]
 
-    // Attach variants
-    const products = await Promise.all(rows.map(async row => {
-      const rawVariants = await db.prepare(
-        'SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id = ?'
-      ).all(row.id)
-      const variants = (Array.isArray(rawVariants) ? rawVariants : []) as DbProductVariant[]
-      return {
-        ...row,
-        product_variants: variants,
-      }
+    // Single batch query for all variants (sebelumnya N+1 per produk).
+    const productIds = rows.map((row: any) => row.id)
+    const allVariants = productIds.length
+      ? ((await db
+          .prepare('SELECT id, product_id, size, color, stock FROM product_variants WHERE product_id IN (' + productIds.map(() => '?').join(',') + ')')
+          .all(...productIds)) as DbProductVariant[])
+      : []
+    const variantsByProduct = new Map<number, DbProductVariant[]>()
+    for (const v of allVariants) {
+      const list = variantsByProduct.get(v.product_id) || []
+      list.push(v)
+      variantsByProduct.set(v.product_id, list)
+    }
+
+    const products = rows.map((row: any) => ({
+      ...row,
+      product_variants: variantsByProduct.get(row.id) || [],
     }))
 
     return NextResponse.json({
