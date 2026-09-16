@@ -46,9 +46,9 @@ export default async function HomePage({
   const page = Math.max(1, parseInt(pageStr) || 1)
   const limit = 12
 
-  // Fetch active banners
-  const rawBanners = await db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY position ASC').all()
-  const banners = (Array.isArray(rawBanners) ? rawBanners : []) as DbBanner[]
+  // Parallelisasi: banners, count, dan categories tidak saling bergantung —
+  // jalankan serentak (dari 4 round-trip berurutan jadi ~1,5).
+  // Hasil query identik; hanya urutan eksekusi yang berubah.
 
   // Build query for products with filters
   let baseWhere = ' FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.is_active = 1'
@@ -75,11 +75,14 @@ export default async function HomePage({
     params.push(Number(max_price))
   }
 
-  // Get total count
-  const countQuery = 'SELECT COUNT(*) as total' + baseWhere
-  const countStmt = db.prepare(countQuery)
-  const totalRow = (await countStmt.get(...params)) as { total: number } | undefined
-  const total = totalRow?.total ?? 0
+  const [rawBanners, totalRow, rawCategories] = await Promise.all([
+    db.prepare('SELECT * FROM banners WHERE is_active = 1 ORDER BY position ASC').all(),
+    db.prepare('SELECT COUNT(*) as total' + baseWhere).get(...params),
+    db.prepare('SELECT id, name, slug FROM categories ORDER BY name').all(),
+  ])
+  const banners = (Array.isArray(rawBanners) ? rawBanners : []) as DbBanner[]
+  const categories = (Array.isArray(rawCategories) ? rawCategories : []) as { id: number; name: string; slug: string }[]
+  const total = (totalRow as { total: number } | undefined)?.total ?? 0
   const totalPages = Math.ceil(total / limit)
 
   let query = `
@@ -112,9 +115,6 @@ export default async function HomePage({
 
   const rawRows = await db.prepare(query).all(...params)
   const rows = (Array.isArray(rawRows) ? rawRows : []) as ProductWithCategory[]
-
-  const rawCategories = await db.prepare('SELECT id, name, slug FROM categories ORDER BY name').all()
-  const categories = (Array.isArray(rawCategories) ? rawCategories : []) as { id: number; name: string; slug: string }[]
 
   return (
     <div className="flex-1 bg-zinc-50">
