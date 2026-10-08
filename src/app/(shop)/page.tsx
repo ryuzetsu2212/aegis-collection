@@ -17,929 +17,836 @@ import {
   Eye,
   TrendingUp,
   Search,
-  Copy,
-  Check,
-  ExternalLink,
   ChevronRight,
-  Sliders,
   Send,
-  Loader2,
-  CheckCircle,
-  Building,
+  Database,
   Lock,
-  Globe2
+  Compass,
+  FileText,
+  SlidersHorizontal,
+  BookmarkCheck
 } from 'lucide-react'
 
-// Demo garments data
-const PRESET_GARMENTS = [
+// Garment Presets for Sandbox
+const PRESETS = [
   {
-    id: 'trench',
-    name: 'Tailored Italian Wool Overcoat',
+    id: 'coat',
+    title: 'Virgin Wool Tailored Trench',
+    sku: 'AEGIS-W26-TRN',
     category: 'Outerwear',
-    specs: 'Double-breasted, 100% Virgin Wool, Peak lapel, Camel finish',
-    imageUrl: 'https://images.unsplash.com/photo-1544022613-e87ca75a784a?q=80&w=800&auto=format&fit=crop',
-    actions: {
-      merchandising: {
-        title: 'The Milano Double-Breasted Virgin Wool Overcoat in Heritage Camel',
-        editorial: 'Masterfully structured from heavyweight Italian virgin wool, this double-breasted overcoat pairs sartorial discipline with effortless drape. Engineered with commanding peak lapels and horn buttons for seamless transition from boardroom to evening gallery receptions.',
-        tags: ['Heritage Sartorial', 'Virgin Wool', 'Camel Tone', 'AW26 Formal', 'Architectural Silhouette'],
-        confidence: '99.8%',
-        seoScore: '98/100',
-      },
-      styling: {
-        lookName: 'Milanese Autumn Metropolitan',
-        palette: ['#C4A482 (Camel)', '#1A1A1A (Charcoal)', '#F5F5F0 (Ecru)'],
-        recommendedPairs: [
-          'Cashmere Rollneck Sweater in Off-White',
-          'Pleated Flannel Trousers in Charcoal Melange',
-          'Blake-Stitched Leather Chelsea Boots in Espresso'
-        ],
-        rationale: 'The camel overcoat provides substantial visual weight; paired with ecru knitwear softens the neckline while charcoal trousers anchor the lower silhouette.'
-      },
-      trends: {
-        sentiment: 'High Positive (+34% WoW search velocity)',
-        seasonFit: 'Autumn / Winter 2026-2027',
-        targetAudience: 'Urban professionals aged 26-44 seeking timeless quiet luxury investment pieces.',
-        velocityIndex: '9.4 / 10'
-      }
+    color: 'Camel Warm Sand',
+    fabric: '100% Italian Virgin Wool (380 GSM)',
+    silhouette: 'Relaxed Double-Breasted with Storm Flap',
+    image: '🧥',
+    attributes: {
+      formality: 'High Editorial / Formal',
+      season: 'Autumn / Winter 2026',
+      drapeIndex: '0.84 (Structured Firm)',
+      texture: 'Brushed Melange Twill',
+    },
+    claudeAnalysis: {
+      copy: 'Sculpted from heavy Italian virgin wool, this double-breasted trench balances architectural volume with effortless drape. Deep raglan sleeves and storm flaps invoke timeless military provenance, updated for contemporary transitional layering.',
+      seoTags: ['camel wool trench', 'double breasted coat', 'tailored outerwear', 'autumn wardrobe investment'],
+      recommendations: [
+        { name: 'Ribbed Cashmere Mockneck in Oatmeal', rationale: 'Harmonizes collar heights and adds tactile warmth.' },
+        { name: 'Pleated Flannel Trousers in Charcoal', rationale: 'Grounds the camel palette with sharp masculine tailoring.' },
+        { name: 'Polished Calfskin Chelsea Boots', rationale: 'Balances the hem drape with minimal clean footwear.' }
+      ],
+      confidence: '99.6%',
+      tokensUsed: 420
     }
   },
   {
     id: 'dress',
-    name: 'Asymmetric Silk Crepe Midi Slip',
-    category: 'Eveningwear',
-    specs: 'Bias-cut 22mm Mulberry Silk, Asymmetric hemline, Liquid drape, Emerald hue',
-    imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=800&auto=format&fit=crop',
-    actions: {
-      merchandising: {
-        title: 'The Eos Asymmetric Mulberry Silk Crepe Slip Dress in Deep Emerald',
-        editorial: 'Cut on the bias to trace the natural contours of the body, the Eos Slip Dress is rendered in liquid 22mm Mulberry silk. Features a subtle cowl neckline and an architectural asymmetric hemline that catches ambient candlelight with subtle luster.',
-        tags: ['Bias Cut', 'Mulberry Silk', 'Emerald Green', 'Contemporary Gala', 'Liquid Drape'],
-        confidence: '99.5%',
-        seoScore: '96/100',
-      },
-      styling: {
-        lookName: 'Midnight Gallery Vernissage',
-        palette: ['#0A3828 (Deep Emerald)', '#D4AF37 (Pale Gold)', '#000000 (Onyx)'],
-        recommendedPairs: [
-          'Minimalist Strappy Heeled Sandals in Mirrored Gold',
-          'Structured Velvet Tuxedo Blazer in Jet Black',
-          'Architectural Freshwater Pearl Drop Earrings'
-        ],
-        rationale: 'Deep jewel tones harmonize with tactile black velvet, providing temperature balance and tactile contrast to the high-sheen silk.'
-      },
-      trends: {
-        sentiment: 'Sustained High Growth (+41% demand on eveningwear)',
-        seasonFit: 'Holiday 2026 & Spring Gala Season',
-        targetAudience: 'Cocktail attendees, black-tie wedding guests, and luxury evening shoppers.',
-        velocityIndex: '9.7 / 10'
-      }
+    title: 'Bias-Cut Silk Charmeuse Slip',
+    sku: 'AEGIS-S26-SLP',
+    category: 'Dresses',
+    color: 'Obsidian Midnight',
+    fabric: '100% Mulberry Silk (22 Momme)',
+    silhouette: 'Bias-Cut Fluid Midi with Cowl Neck',
+    image: '👗',
+    attributes: {
+      formality: 'Cocktail / Evening Gala',
+      season: 'Transitional All-Season',
+      drapeIndex: '0.96 (Liquid Fluidity)',
+      texture: 'Lustrous Satin Weave',
+    },
+    claudeAnalysis: {
+      copy: 'Spun from luminous 22-momme Mulberry silk, this cowl-neck slip cuts along the grain for an intuitive, liquid silhouette. The draped neckline and delicate French seams distill pure 90s minimalism into an essential evening silhouette.',
+      seoTags: ['silk slip dress', 'bias cut evening dress', 'minimalist black midi', 'mulberry silk gown'],
+      recommendations: [
+        { name: 'Oversized Mohair Cardigan in Chalk', rationale: 'Textural contrast softens evening sheen into daytime luxury.' },
+        { name: 'Sculptural Brass Ear Cuffs', rationale: 'Geometric metallic contrast elevates the fluid drape.' },
+        { name: 'Strappy Kitten Heels in Nappa', rationale: 'Maintains delicate proportions without overpowering the slip.' }
+      ],
+      confidence: '99.4%',
+      tokensUsed: 388
     }
   },
   {
-    id: 'denim',
-    name: 'Raw Japanese Selvedge Trucker',
-    category: 'Denim & Casual',
-    specs: '14.5oz Kurabo Mills Raw Denim, Copper rivets, Boxy box-pleat fit, Indigo',
-    imageUrl: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?q=80&w=800&auto=format&fit=crop',
-    actions: {
-      merchandising: {
-        title: 'Type-II Raw Indigo Selvedge Denim Trucker Jacket (14.5oz Kurabo Mills)',
-        editorial: 'Woven on vintage Toyoda shuttle looms in Kojima, Okayama, this trucker jacket features unwashed 14.5oz red-line selvedge denim. Built with front knife pleats, solid custom copper hardware, and destined to develop unique high-contrast fades over years of authentic wear.',
-        tags: ['Raw Selvedge', 'Kojima Crafted', '14.5oz Denim', 'Workwear Heritage', 'Indigo Aging'],
-        confidence: '99.9%',
-        seoScore: '99/100',
-      },
-      styling: {
-        lookName: 'Authentic Heritage Tokyo Minimalist',
-        palette: ['#1B2F4C (Raw Indigo)', '#F2EBD9 (Heavy Canvas)', '#543D2B (Waxed Brown)'],
-        recommendedPairs: [
-          'Heavyweight 280gsm Loopwheel Pocket Tee in Ecru',
-          'Relaxed Chino Fatigue Pants in Washed Olive',
-          'Waxed Roughout Leather Service Boots'
-        ],
-        rationale: 'Raw indigo requires sturdy, tactile companions. Heavyweight ecru jersey and olive twill prevent color bleed friction while grounding the utility aesthetic.'
-      },
-      trends: {
-        sentiment: 'Perennial Cult Classic (+18% vintage enthusiast engagement)',
-        seasonFit: 'All-Year Transitional Staple',
-        targetAudience: 'Artisanal menswear enthusiasts, heritage denim collectors, craft-conscious shoppers.',
-        velocityIndex: '8.9 / 10'
-      }
+    id: 'jacket',
+    title: 'Kurabo Raw Selvedge Trucker',
+    sku: 'AEGIS-D26-JKT',
+    category: 'Denim',
+    color: 'Deep Indigo Raw',
+    fabric: '14.5oz Japanese Kurabo Selvedge Denim',
+    silhouette: 'Boxy Type-II Workwear Silhouette',
+    image: '👔',
+    attributes: {
+      formality: 'Elevated Casual / Heritage',
+      season: 'Year-Round Utility',
+      drapeIndex: '0.62 (Rigid Architectural)',
+      texture: 'Unwashed Shuttle-Loomed Twill',
+    },
+    claudeAnalysis: {
+      copy: 'Milled in Okayama on vintage Toyoda shuttle looms, this 14.5oz raw indigo trucker exhibits pronounced slub character and red-line selvedge ID. Cut boxy through the chest with pleat details for ergonomic durability.',
+      seoTags: ['japanese selvedge jacket', 'raw denim trucker', 'kurabo mills outerwear', 'heritage workwear'],
+      recommendations: [
+        { name: 'Heavyweight Loopwheel Tee in Off-White', rationale: 'Substantial 300gsm jersey holds up against rigid denim collar.' },
+        { name: 'Washed Army Chino in Olive', rationale: 'Classic mid-century military contrast against dark indigo.' },
+        { name: 'Waxed Suede Service Boots', rationale: 'Patina synergy between unwashed cotton and roughout leather.' }
+      ],
+      confidence: '99.8%',
+      tokensUsed: 442
     }
   }
 ]
 
-export default function AegisLandingPage() {
-  const [selectedGarment, setSelectedGarment] = useState(PRESET_GARMENTS[0])
-  const [activeTab, setActiveTab] = useState<'merchandising' | 'styling' | 'trends'>('merchandising')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [copiedCode, setCopiedCode] = useState(false)
-  const [codeLang, setCodeLang] = useState<'curl' | 'typescript' | 'python'>('typescript')
-
+export default function AegisClaudeLanding() {
+  const [activePreset, setActivePreset] = useState(PRESETS[0])
+  const [activeMode, setActiveMode] = useState<'copy' | 'style' | 'specs'>('copy')
+  const [isSimulating, setIsSimulating] = useState(false)
+  const [activeCodeTab, setActiveCodeTab] = useState<'ts' | 'curl' | 'py'>('ts')
+  
   // Early access form state
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    skuVolume: '1,000 - 10,000 SKUs'
-  })
+  const [email, setEmail] = useState('')
+  const [brand, setBrand] = useState('')
+  const [skuCount, setSkuCount] = useState('10,000 - 50,000 SKUs')
   const [formSubmitted, setFormSubmitted] = useState(false)
-  const [formLoading, setFormLoading] = useState(false)
 
-  const handleSimulateAnalysis = (garment: typeof PRESET_GARMENTS[0], tab: 'merchandising' | 'styling' | 'trends') => {
-    setIsGenerating(true)
-    setSelectedGarment(garment)
-    setActiveTab(tab)
+  const handleSelectPreset = (preset: typeof PRESETS[0]) => {
+    setIsSimulating(true)
+    setActivePreset(preset)
     setTimeout(() => {
-      setIsGenerating(false)
+      setIsSimulating(false)
     }, 450)
-  }
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedCode(true)
-    setTimeout(() => setCopiedCode(false), 2000)
   }
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setFormLoading(true)
-    setTimeout(() => {
-      setFormLoading(false)
-      setFormSubmitted(true)
-    }, 700)
-  }
-
-  const codeSnippets = {
-    typescript: `import { AegisClient } from '@aegis-ai/sdk'
-
-const aegis = new AegisClient({
-  apiKey: process.env.AEGIS_API_KEY,
-  model: 'aegis-claude-3-5-sonnet-fashion-v2'
-})
-
-// Autonomous Multi-Modal Merchandising & Style Enrichment
-const response = await aegis.merchandise.enrich({
-  imageUrl: 'https://cdn.yourbrand.com/products/overcoat-camel-aw26.jpg',
-  brandVoice: 'Minimalist Milanese Luxury',
-  specs: {
-    material: '100% Virgin Wool',
-    silhouette: 'Double Breasted',
-    category: 'Outerwear'
-  },
-  generate: ['editorial_copy', 'style_graph', 'seo_metadata', 'trend_velocity']
-})
-
-console.log(response.editorialTitle)
-// -> "The Milano Double-Breasted Virgin Wool Overcoat in Heritage Camel"
-console.log(response.styleGraph.recommendedPairs)
-// -> ["Cashmere Rollneck Sweater", "Pleated Flannel Trousers", ...]`,
-
-    python: `from aegis_ai import AegisClient
-
-client = AegisClient(api_key="aegis_sec_live_99214")
-
-# Synthesize multi-modal garment styling and attributes
-enrichment = client.merchandise.enrich(
-    image_url="https://cdn.yourbrand.com/products/overcoat-camel-aw26.jpg",
-    brand_voice="Minimalist Milanese Luxury",
-    specs={
-        "material": "100% Virgin Wool",
-        "silhouette": "Double Breasted"
-    },
-    capabilities=["editorial_copy", "look_synthesis", "trend_fit"]
-)
-
-print(enrichment.editorial_title)
-print(enrichment.suggested_look.palette)`,
-
-    curl: `curl -X POST https://api.aegiscollection.biz.id/v1/merchandise/enrich \
-  -H "Authorization: Bearer YOUR_AEGIS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "aegis-claude-3-5-sonnet-fashion",
-    "image_url": "https://cdn.yourbrand.com/products/overcoat-camel.jpg",
-    "brand_voice": "Contemporary Minimalist",
-    "capabilities": ["editorial_copy", "style_graph", "seo_schema"]
-  }'`
+    if (!email) return
+    setFormSubmitted(true)
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      {/* Background radial gradients */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-b from-indigo-600/15 via-purple-600/5 to-transparent blur-3xl opacity-70" />
-        <div className="absolute top-[800px] -left-40 w-[600px] h-[600px] bg-indigo-900/10 blur-[140px] pointer-events-none" />
-        <div className="absolute top-[1600px] -right-40 w-[700px] h-[700px] bg-purple-900/10 blur-[150px] pointer-events-none" />
-      </div>
-
-      {/* Top Bar / SaaS Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-zinc-950/80 border-b border-zinc-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div className="w-full bg-[#f5f4ed] text-[#141413] min-h-screen selection:bg-[#c96442]/20 selection:text-[#c96442]">
+      {/* Top Header / Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b border-[#e8e6dc] bg-[#f5f4ed]/90 backdrop-blur-md transition-all">
+        <div className="max-w-6xl mx-auto px-6 h-18 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-shadow">
-                <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
-                </div>
+              <div className="w-8 h-8 rounded-lg bg-[#141413] flex items-center justify-center text-[#faf9f5] font-claude-serif text-lg font-medium shadow-sm group-hover:bg-[#c96442] transition-colors">
+                Æ
               </div>
-              <div>
-                <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-                  Aegis <span className="text-indigo-400 font-mono text-xs px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 font-semibold">AI</span>
+              <div className="flex flex-col">
+                <span className="font-claude-serif text-xl font-medium tracking-tight text-[#141413]">
+                  Aegis AI
                 </span>
-                <span className="block text-[10px] text-zinc-400 font-medium tracking-wider uppercase -mt-0.5">Fashion Intelligence</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#87867f] -mt-1 font-mono">
+                  Anthropic Partner
+                </span>
               </div>
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-            <a href="#features" className="hover:text-white transition-colors">Capabilities</a>
-            <a href="#demo" className="hover:text-white transition-colors">Interactive Sandbox</a>
-            <a href="#architecture" className="hover:text-white transition-colors">Architecture</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="#api" className="hover:text-white transition-colors">API Docs</a>
+          <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal text-[#5e5d59]">
+            <a href="#about" className="hover:text-[#141413] transition-colors">Architecture</a>
+            <a href="#sandbox" className="hover:text-[#141413] transition-colors">Live Sandbox</a>
+            <a href="#api" className="hover:text-[#141413] transition-colors">Developer Specs</a>
+            <a href="#pricing" className="hover:text-[#141413] transition-colors">Pricing</a>
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-xs sm:text-sm font-medium text-zinc-300 hover:text-white px-3 py-1.5 transition-colors hidden sm:inline-block"
-            >
-              Sign In
-            </Link>
             <a
-              href="#early-access"
-              className="text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all flex items-center gap-1.5"
+              href="#sandbox"
+              className="text-sm font-medium text-[#4d4c48] px-3.5 py-2 rounded-lg hover:text-[#141413] transition-colors hidden sm:inline-block"
+            >
+              Demo
+            </a>
+            <a
+              href="#access"
+              className="text-sm font-medium bg-[#c96442] text-[#faf9f5] px-4 py-2 rounded-lg hover:bg-[#b85838] transition-colors shadow-xs"
             >
               Request API Key
-              <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16 sm:pt-28 sm:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative">
-        {/* Model Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-8 backdrop-blur-md">
-          <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-          Powered by Anthropic Claude 3.5 Sonnet & Claude Vision
-          <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />
-        </div>
-
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.12]">
-          Autonomous Style Intelligence & Merchandising for Modern Fashion
-        </h1>
-
-        <p className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-3xl mx-auto leading-relaxed">
-          Aegis AI transforms raw apparel imagery and product specifications into studio-grade editorial copy, dynamic style graphs, and hyper-personalized customer recommendations in milliseconds.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <a
-            href="#demo"
-            className="px-6 py-3.5 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-200 transition-all shadow-xl shadow-white/10 flex items-center gap-2 group"
-          >
-            Launch Interactive Sandbox
-            <Sparkles className="w-4 h-4 text-indigo-600 group-hover:rotate-12 transition-transform" />
-          </a>
-          <a
-            href="#architecture"
-            className="px-6 py-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 font-semibold text-sm hover:bg-zinc-800 hover:border-zinc-700 transition-all flex items-center gap-2"
-          >
-            <Code2 className="w-4 h-4 text-zinc-400" />
-            View Developer Specs
-          </a>
-        </div>
-
-        {/* Metric Strip */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto border-y border-zinc-800/80 py-8 bg-zinc-950/40 backdrop-blur-sm">
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">99.8%</div>
-            <div className="text-xs text-zinc-400 font-medium mt-1">Multi-modal Tag Accuracy</div>
+      <section className="relative pt-20 pb-24 md:pt-28 md:pb-32 px-6 overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Overline Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6dc] bg-[#faf9f5] text-xs text-[#5e5d59] mb-8 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-[#c96442] animate-pulse" />
+            <span className="font-mono text-[11px] text-[#4d4c48]">Powered by Claude 3.5 Sonnet & Claude Vision</span>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-indigo-400 tracking-tight">3.8x</div>
-            <div className="text-xs text-zinc-400 font-medium mt-1">Shopper Conversion Lift</div>
+
+          {/* Display Headline */}
+          <h1 className="font-claude-serif text-4xl sm:text-5xl md:text-6xl text-[#141413] font-normal tracking-tight leading-[1.12] mb-7">
+            Autonomous Style Intelligence for Modern Apparel.
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-lg md:text-xl text-[#5e5d59] leading-relaxed max-w-2xl mx-auto mb-10 font-normal">
+            Aegis AI couples Anthropic Claude 3.5 Sonnet’s multi-modal visual reasoning with deep fashion ontologies. Transform flat-lay garment photos into high-converting editorial merchandising, dynamic style graphs, and personalized wardrobe recommendations in milliseconds.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <a
+              href="#access"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#c96442] text-[#faf9f5] text-[15px] font-medium px-6 py-3.5 rounded-xl hover:bg-[#b85838] transition-all shadow-sm group"
+            >
+              <span>Apply for API Sandbox Access</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </a>
+            <a
+              href="#sandbox"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#e8e6dc] text-[#4d4c48] text-[15px] font-medium px-6 py-3.5 rounded-xl hover:bg-[#dfdcd0] transition-colors"
+            >
+              <span>Explore Interactive Sandbox</span>
+            </a>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">&lt;450ms</div>
-            <div className="text-xs text-zinc-400 font-medium mt-1">Inference Latency</div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-purple-400 tracking-tight">120k+</div>
-            <div className="text-xs text-zinc-400 font-medium mt-1">SKUs Enriched Monthly</div>
+
+          {/* Metrics & Trust Band */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-[#e8e6dc] text-left">
+            <div>
+              <div className="font-claude-serif text-2xl md:text-3xl font-normal text-[#141413]">99.8%</div>
+              <div className="text-xs text-[#87867f] mt-1 font-sans">Multi-Modal Silhouette Precision</div>
+            </div>
+            <div>
+              <div className="font-claude-serif text-2xl md:text-3xl font-normal text-[#141413]">3.8x</div>
+              <div className="text-xs text-[#87867f] mt-1 font-sans">E-Commerce Lookbook Conversion</div>
+            </div>
+            <div>
+              <div className="font-claude-serif text-2xl md:text-3xl font-normal text-[#141413]">&lt;450ms</div>
+              <div className="text-xs text-[#87867f] mt-1 font-sans">Edge Inference Latency</div>
+            </div>
+            <div>
+              <div className="font-claude-serif text-2xl md:text-3xl font-normal text-[#141413]">Zero</div>
+              <div className="text-xs text-[#87867f] mt-1 font-sans">Customer Data Retention</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Interactive Sandbox Section */}
-      <section id="demo" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800/60">
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2 font-mono">Live Interactive Sandbox</div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            See the Multi-Modal Reasoning Engine in Action
-          </h2>
-          <p className="mt-3 text-zinc-400 text-sm sm:text-base">
-            Select a sample garment and test how Aegis AI analyzes silhouette, fabric drape, and style ontology using Claude 3.5 Sonnet.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-zinc-900/60 border border-zinc-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
-          {/* Garment Selector & Image Preview */}
-          <div className="lg:col-span-5 space-y-6">
+      <section id="sandbox" className="py-20 px-6 bg-[#faf9f5] border-y border-[#e8e6dc]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block mb-3">
-                1. Select Garment SKU
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {PRESET_GARMENTS.map((g) => {
-                  const isSelected = selectedGarment.id === g.id
-                  return (
-                    <button
-                      key={g.id}
-                      onClick={() => handleSimulateAnalysis(g, activeTab)}
-                      className={`p-2.5 rounded-2xl border text-left transition-all relative overflow-hidden ${
-                        isSelected
-                          ? 'bg-indigo-600/15 border-indigo-500 shadow-md shadow-indigo-500/20'
-                          : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850'
-                      }`}
-                    >
-                      <div className="aspect-square rounded-xl overflow-hidden mb-2 relative bg-zinc-950">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={g.imageUrl}
-                          alt={g.name}
-                          className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="text-[11px] font-semibold text-white truncate">{g.name}</div>
-                      <div className="text-[10px] text-zinc-400 truncate">{g.category}</div>
-                    </button>
-                  )
-                })}
-              </div>
+              <div className="text-xs font-mono uppercase tracking-wider text-[#c96442] mb-2">Live Demonstration</div>
+              <h2 className="font-claude-serif text-3xl md:text-4xl text-[#141413] font-normal tracking-tight">
+                Interactive Styling & Reasoning Console
+              </h2>
             </div>
-
-            {/* Selected Garment Detail Card */}
-            <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-zinc-400">Inspected Garment</span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">SKU-{selectedGarment.id.toUpperCase()}-2026</span>
-              </div>
-              <h3 className="text-base font-bold text-white">{selectedGarment.name}</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed font-mono bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800/60">
-                Specs: {selectedGarment.specs}
-              </p>
-              <div className="flex items-center gap-2 text-[11px] text-indigo-400 pt-1">
-                <Eye className="w-3.5 h-3.5" />
-                <span>Multi-modal Vision Ingestion: 2048x2048px RGB</span>
-              </div>
-            </div>
+            <p className="text-sm text-[#5e5d59] max-w-md">
+              Select an apparel garment below to inspect real-time Claude 3.5 Sonnet multi-modal extraction, style ontology tagging, and automated editorial synthesis.
+            </p>
           </div>
 
-          {/* Model Reasoning & Output Console */}
-          <div className="lg:col-span-7 space-y-5">
-            {/* Action Tabs */}
-            <div>
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block mb-3">
-                2. Choose Reasoning Pipeline
-              </label>
-              <div className="grid grid-cols-3 gap-2 p-1 bg-zinc-950 border border-zinc-800 rounded-xl">
-                <button
-                  onClick={() => handleSimulateAnalysis(selectedGarment, 'merchandising')}
-                  className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'merchandising'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <Shirt className="w-3.5 h-3.5" />
-                  Editorial Copy
-                </button>
-                <button
-                  onClick={() => handleSimulateAnalysis(selectedGarment, 'styling')}
-                  className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'styling'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  Style Synthesizer
-                </button>
-                <button
-                  onClick={() => handleSimulateAnalysis(selectedGarment, 'trends')}
-                  className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                    activeTab === 'trends'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  Trend Analytics
-                </button>
+          {/* Sandbox Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column: Preset Catalog */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="text-xs font-medium text-[#87867f] px-1 uppercase tracking-wider">
+                Select Test Garment SKU
+              </div>
+              {PRESETS.map((p) => {
+                const isSelected = activePreset.id === p.id
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleSelectPreset(p)}
+                    className={`w-full text-left p-4 rounded-xl border transition-all text-sm flex items-start gap-4 ${
+                      isSelected
+                        ? 'bg-[#ffffff] border-[#c96442] shadow-sm'
+                        : 'bg-[#faf9f5] border-[#e8e6dc] hover:bg-[#ffffff] hover:border-[#d1cfc5]'
+                    }`}
+                  >
+                    <div className="text-3xl p-2 rounded-lg bg-[#f5f4ed] border border-[#e8e6dc]">
+                      {p.image}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-[#141413] truncate">{p.title}</span>
+                        <span className="text-[11px] font-mono text-[#87867f]">{p.category}</span>
+                      </div>
+                      <div className="text-xs text-[#5e5d59] truncate mb-2">{p.fabric}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-[#f5f4ed] text-[#5e5d59]">
+                          {p.color}
+                        </span>
+                        <span className="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-[#f5f4ed] text-[#5e5d59]">
+                          {p.attributes.season}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+
+              <div className="p-4 rounded-xl border border-[#e8e6dc] bg-[#f5f4ed] text-xs text-[#5e5d59] space-y-2">
+                <div className="font-medium text-[#141413] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#c96442]" />
+                  <span>Deterministic Fashion Ontologies</span>
+                </div>
+                <p className="leading-relaxed">
+                  Every extraction passes through our structured ontology validator to prevent model hallucination in fabric GSM, weave structures, and seam constructions.
+                </p>
               </div>
             </div>
 
-            {/* Console Output Area */}
-            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 relative min-h-[380px] flex flex-col font-sans">
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+            {/* Right Column: Claude Reasoning Output */}
+            <div className="lg:col-span-7 bg-[#ffffff] border border-[#e8e6dc] rounded-2xl shadow-xs overflow-hidden">
+              {/* Header Bar */}
+              <div className="p-4 border-b border-[#e8e6dc] bg-[#faf9f5] flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-mono text-zinc-300">claude-3-5-sonnet:stream-response</span>
+                  <span className="font-mono text-xs px-2 py-1 rounded bg-[#e8e6dc] text-[#141413]">
+                    {activePreset.sku}
+                  </span>
+                  <span className="text-xs text-[#87867f]">•</span>
+                  <span className="text-xs text-[#5e5d59] font-medium flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-[#c96442]" />
+                    Claude 3.5 Sonnet Vision
+                  </span>
                 </div>
-                <div className="text-[11px] font-mono text-zinc-400 flex items-center gap-2">
-                  <span>Confidence: <strong className="text-emerald-400">{selectedGarment.actions.merchandising.confidence}</strong></span>
+
+                {/* Sub tabs */}
+                <div className="flex items-center gap-1 bg-[#f5f4ed] p-1 rounded-lg border border-[#e8e6dc]">
+                  <button
+                    onClick={() => setActiveMode('copy')}
+                    className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+                      activeMode === 'copy'
+                        ? 'bg-[#ffffff] text-[#141413] font-medium shadow-2xs'
+                        : 'text-[#5e5d59] hover:text-[#141413]'
+                    }`}
+                  >
+                    Editorial Copy
+                  </button>
+                  <button
+                    onClick={() => setActiveMode('style')}
+                    className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+                      activeMode === 'style'
+                        ? 'bg-[#ffffff] text-[#141413] font-medium shadow-2xs'
+                        : 'text-[#5e5d59] hover:text-[#141413]'
+                    }`}
+                  >
+                    Lookbook Stylist
+                  </button>
+                  <button
+                    onClick={() => setActiveMode('specs')}
+                    className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+                      activeMode === 'specs'
+                        ? 'bg-[#ffffff] text-[#141413] font-medium shadow-2xs'
+                        : 'text-[#5e5d59] hover:text-[#141413]'
+                    }`}
+                  >
+                    Vision Attributes
+                  </button>
                 </div>
               </div>
 
-              {isGenerating ? (
-                <div className="flex-1 flex flex-col items-center justify-center py-16 gap-3 text-zinc-400">
-                  <Loader2 className="w-7 h-7 text-indigo-400 animate-spin" />
-                  <span className="text-xs font-mono">Synthesizing garment ontology with Claude Vision...</span>
-                </div>
-              ) : (
-                <div className="space-y-4 text-xs sm:text-sm">
-                  {activeTab === 'merchandising' && (
-                    <div className="space-y-4">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Generated Editorial Headline</span>
-                        <h4 className="text-base font-bold text-white mt-1">
-                          {selectedGarment.actions.merchandising.title}
-                        </h4>
-                      </div>
+              {/* Main Console Body */}
+              <div className="p-6">
+                {isSimulating ? (
+                  <div className="py-20 flex flex-col items-center justify-center text-center">
+                    <div className="w-8 h-8 rounded-full border-2 border-[#c96442] border-t-transparent animate-spin mb-3" />
+                    <div className="text-sm font-medium text-[#141413]">Decomposing Garment Imagery...</div>
+                    <div className="text-xs text-[#87867f] mt-1 font-mono">Passing tokens to Claude 3.5 Sonnet Vision API</div>
+                  </div>
+                ) : (
+                  <div>
+                    {activeMode === 'copy' && (
+                      <div className="space-y-6">
+                        <div>
+                          <div className="text-xs font-mono uppercase tracking-wider text-[#87867f] mb-2">
+                            Generated Editorial Narrative
+                          </div>
+                          <p className="font-claude-serif text-xl text-[#141413] leading-relaxed italic bg-[#f5f4ed] p-4 rounded-xl border border-[#e8e6dc]">
+                            “{activePreset.claudeAnalysis.copy}”
+                          </p>
+                        </div>
 
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Brand Story & Merchandising Copy</span>
-                        <p className="mt-1 text-zinc-300 leading-relaxed bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800/80">
-                          {selectedGarment.actions.merchandising.editorial}
-                        </p>
-                      </div>
+                        <div>
+                          <div className="text-xs font-mono uppercase tracking-wider text-[#87867f] mb-2">
+                            Extracted High-Intent E-Commerce Meta Tags
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {activePreset.claudeAnalysis.seoTags.map((tag, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-[#f5f4ed] border border-[#e8e6dc] text-[#4d4c48]"
+                              >
+                                <span>#</span>
+                                <span>{tag}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
 
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Taxonomy & Trend Meta Tags</span>
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {selectedGarment.actions.merchandising.tags.map((tag) => (
-                            <span key={tag} className="px-2.5 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-mono">
-                              #{tag}
-                            </span>
+                        <div className="pt-4 border-t border-[#f0eee6] flex items-center justify-between text-xs font-mono text-[#87867f]">
+                          <span>Confidence Score: {activePreset.claudeAnalysis.confidence}</span>
+                          <span>Prompt Tokens: {activePreset.claudeAnalysis.tokensUsed} tokens</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeMode === 'style' && (
+                      <div className="space-y-4">
+                        <div className="text-xs font-mono uppercase tracking-wider text-[#87867f] mb-1">
+                          Complementary Wardrobe Pairings (Style Graph)
+                        </div>
+                        <div className="space-y-3">
+                          {activePreset.claudeAnalysis.recommendations.map((rec, i) => (
+                            <div
+                              key={i}
+                              className="p-3.5 rounded-xl border border-[#e8e6dc] bg-[#faf9f5] flex items-start gap-3"
+                            >
+                              <div className="w-5 h-5 rounded-full bg-[#c96442]/10 text-[#c96442] flex items-center justify-center font-mono text-xs font-bold mt-0.5">
+                                {i + 1}
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-[#141413]">{rec.name}</div>
+                                <div className="text-xs text-[#5e5d59] mt-0.5 leading-relaxed">{rec.rationale}</div>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {activeTab === 'styling' && (
-                    <div className="space-y-4">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Curated Style Concept</span>
-                        <h4 className="text-base font-bold text-white mt-1">
-                          {selectedGarment.actions.styling.lookName}
-                        </h4>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Harmonized Color Palette</span>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {selectedGarment.actions.styling.palette.map((c) => (
-                            <span key={c} className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-mono">
-                              {c}
-                            </span>
-                          ))}
+                    {activeMode === 'specs' && (
+                      <div className="space-y-4">
+                        <div className="text-xs font-mono uppercase tracking-wider text-[#87867f] mb-1">
+                          Multi-Modal Inferred Specs
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="p-3 rounded-lg bg-[#f5f4ed] border border-[#e8e6dc]">
+                            <span className="text-[#87867f] block">Fabric Composition</span>
+                            <span className="font-medium text-[#141413] mt-0.5 block">{activePreset.fabric}</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[#f5f4ed] border border-[#e8e6dc]">
+                            <span className="text-[#87867f] block">Silhouette Profile</span>
+                            <span className="font-medium text-[#141413] mt-0.5 block">{activePreset.silhouette}</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[#f5f4ed] border border-[#e8e6dc]">
+                            <span className="text-[#87867f] block">Formality Index</span>
+                            <span className="font-medium text-[#141413] mt-0.5 block">{activePreset.attributes.formality}</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[#f5f4ed] border border-[#e8e6dc]">
+                            <span className="text-[#87867f] block">Drape Resistance</span>
+                            <span className="font-medium text-[#141413] mt-0.5 block">{activePreset.attributes.drapeIndex}</span>
+                          </div>
                         </div>
                       </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Automated Basket / Bundle Recommendations</span>
-                        <ul className="mt-2 space-y-1.5">
-                          {selectedGarment.actions.styling.recommendedPairs.map((item, idx) => (
-                            <li key={idx} className="flex items-center gap-2 text-zinc-300 bg-zinc-900/40 px-3 py-2 rounded-lg border border-zinc-800/50">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <p className="text-[11px] text-zinc-400 italic pt-1 border-t border-zinc-850">
-                        Reasoning Rationale: {selectedGarment.actions.styling.rationale}
-                      </p>
-                    </div>
-                  )}
-
-                  {activeTab === 'trends' && (
-                    <div className="space-y-4">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Demand Velocity & Velocity Index</span>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xl font-bold text-emerald-400 font-mono">
-                            {selectedGarment.actions.trends.velocityIndex}
-                          </span>
-                          <span className="text-xs text-zinc-300">
-                            {selectedGarment.actions.trends.sentiment}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Seasonal Lifecycle Window</span>
-                        <div className="mt-1 text-sm font-semibold text-white">
-                          {selectedGarment.actions.trends.seasonFit}
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Target Customer Demographic Persona</span>
-                        <p className="mt-1 text-zinc-300 leading-relaxed bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80">
-                          {selectedGarment.actions.trends.targetAudience}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Core Capabilities Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800/60">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2 font-mono">Engine Architecture</div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Engineered Specifically for Apparel & Fashion Retailers
-          </h2>
-          <p className="mt-3 text-zinc-400 text-sm sm:text-base">
-            Generic LLMs hallucinate garment fits and fabric structures. Aegis AI grounds Anthropic Claude with deep multi-modal fashion ontologies.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-7 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-indigo-500/40 transition-all space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <Eye className="w-6 h-6" />
+      {/* Chapter 2: Technical Architecture (Dark Section ala Anthropic Near Black) */}
+      <section id="api" className="py-24 px-6 bg-[#141413] text-[#faf9f5]">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-3xl mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#30302e] border border-[#4d4c48] text-xs text-[#d97757] font-mono mb-4">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Headless REST & Streaming API</span>
             </div>
-            <h3 className="text-lg font-bold text-white">Multi-Modal Drape & Fabric Vision</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              Claude 3.5 Vision decomposes high-resolution garment imagery down to weave density, lapel curves, pocket placements, and garment silhouette without manual data entry.
-            </p>
-          </div>
-
-          <div className="p-7 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-indigo-500/40 transition-all space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Brand Voice Preservation</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              Inject your brand guidelines, editorial stylebooks, and banned vocabulary. Every product story reads like it was authored by your senior creative director.
-            </p>
-          </div>
-
-          <div className="p-7 rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-indigo-500/40 transition-all space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Zap className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Headless Commerce Connectors</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              Native webhooks and RESTful APIs sync directly into Shopify Plus, Magento, BigCommerce, or custom Next.js storefronts with automatic JSON schema validation.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Developer Architecture & Code Section */}
-      <section id="architecture" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800/60">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-5 space-y-6">
-            <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest font-mono">Developer First API</div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight">
-              One Unified API for Catalog Enrichment & Real-time Styling
+            <h2 className="font-claude-serif text-3xl md:text-5xl text-[#faf9f5] font-normal tracking-tight leading-tight mb-4">
+              Built for High-Volume Catalog Pipelines
             </h2>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              Integrate Aegis AI into your ingest pipelines or consumer storefronts with minimal lines of code. Sub-450ms responses with structured JSON output guaranteed.
+            <p className="text-base md:text-lg text-[#b0aea5] leading-relaxed">
+              Plug Aegis AI directly into your Shopify Plus, WooCommerce, or custom ERP. Dispatch high-res product shoots and receive structured JSON catalog enrichments with strict type contracts.
             </p>
-
-            <div className="space-y-3 pt-2">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-sm font-semibold text-white">Deterministic Output Schemas</div>
-                  <div className="text-xs text-zinc-400">Strict Pydantic / TypeScript type definitions for every API response.</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-sm font-semibold text-white">Zero Data Retention Option</div>
-                  <div className="text-xs text-zinc-400">Enterprise data privacy: your proprietary designs and catalog assets are never used for model training.</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-sm font-semibold text-white">Batch & Asynchronous Webhooks</div>
-                  <div className="text-xs text-zinc-400">Enrich 50,000+ seasonal SKUs overnight with resilient background job queues.</div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          <div id="api" className="lg:col-span-7 bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-3.5 bg-zinc-900/80 border-b border-zinc-800">
+          {/* Code Showcase Terminal */}
+          <div className="bg-[#1c1c1b] border border-[#30302e] rounded-2xl overflow-hidden shadow-2xl">
+            {/* Terminal Tab Bar */}
+            <div className="px-4 py-3 bg-[#171716] border-b border-[#30302e] flex items-center justify-between">
               <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-[#3d3d3a]" />
+                <span className="w-3 h-3 rounded-full bg-[#3d3d3a]" />
+                <span className="w-3 h-3 rounded-full bg-[#3d3d3a]" />
+                <span className="ml-2 text-xs font-mono text-[#87867f]">api.aegiscollection.biz.id</span>
+              </div>
+
+              <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setCodeLang('typescript')}
-                  className={`text-xs font-mono px-3 py-1 rounded-md transition-colors ${
-                    codeLang === 'typescript' ? 'bg-indigo-600 text-white font-semibold' : 'text-zinc-400 hover:text-white'
+                  onClick={() => setActiveCodeTab('ts')}
+                  className={`text-xs px-3 py-1 rounded font-mono transition-colors ${
+                    activeCodeTab === 'ts'
+                      ? 'bg-[#30302e] text-[#faf9f5]'
+                      : 'text-[#87867f] hover:text-[#b0aea5]'
                   }`}
                 >
                   TypeScript SDK
                 </button>
                 <button
-                  onClick={() => setCodeLang('python')}
-                  className={`text-xs font-mono px-3 py-1 rounded-md transition-colors ${
-                    codeLang === 'python' ? 'bg-indigo-600 text-white font-semibold' : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  Python SDK
-                </button>
-                <button
-                  onClick={() => setCodeLang('curl')}
-                  className={`text-xs font-mono px-3 py-1 rounded-md transition-colors ${
-                    codeLang === 'curl' ? 'bg-indigo-600 text-white font-semibold' : 'text-zinc-400 hover:text-white'
+                  onClick={() => setActiveCodeTab('curl')}
+                  className={`text-xs px-3 py-1 rounded font-mono transition-colors ${
+                    activeCodeTab === 'curl'
+                      ? 'bg-[#30302e] text-[#faf9f5]'
+                      : 'text-[#87867f] hover:text-[#b0aea5]'
                   }`}
                 >
                   cURL
                 </button>
+                <button
+                  onClick={() => setActiveCodeTab('py')}
+                  className={`text-xs px-3 py-1 rounded font-mono transition-colors ${
+                    activeCodeTab === 'py'
+                      ? 'bg-[#30302e] text-[#faf9f5]'
+                      : 'text-[#87867f] hover:text-[#b0aea5]'
+                  }`}
+                >
+                  Python
+                </button>
               </div>
-
-              <button
-                onClick={() => handleCopy(codeSnippets[codeLang])}
-                className="text-xs text-zinc-400 hover:text-white flex items-center gap-1.5 transition-colors"
-                title="Copy code"
-              >
-                {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span className="font-mono">{copiedCode ? 'Copied' : 'Copy'}</span>
-              </button>
             </div>
 
-            <div className="p-5 font-mono text-xs overflow-x-auto text-zinc-300 leading-relaxed bg-zinc-950/90">
-              <pre>
-                <code>{codeSnippets[codeLang]}</code>
-              </pre>
+            {/* Code Body */}
+            <div className="p-6 font-claude-mono text-xs md:text-sm text-[#b0aea5] overflow-x-auto leading-relaxed">
+              {activeCodeTab === 'ts' && (
+                <pre>
+{`import { AegisClient } from '@aegis-ai/sdk';
+
+const aegis = new AegisClient({
+  apiKey: process.env.AEGIS_API_KEY, // Provisioned via Sandbox
+  engine: 'claude-3-5-sonnet-20241022',
+});
+
+// Process apparel photo shoot with multi-modal reasoning
+const result = await aegis.merchandise.enrich({
+  imageUrl: 'https://cdn.yourbrand.com/products/AW26_TRENCH_01.jpg',
+  brandVoice: 'minimalist-editorial-luxury',
+  extractAttributes: ['drape_index', 'gsm_estimate', 'silhouette', 'pairing_graph'],
+  temperature: 0.2, // Deterministic extraction
+});
+
+console.log('Enriched Title:', result.editorialTitle);
+console.log('Style Graph Pairings:', result.pairingGraph);`}
+                </pre>
+              )}
+
+              {activeCodeTab === 'curl' && (
+                <pre>
+{`curl -X POST https://api.aegiscollection.biz.id/v1/merchandise/enrich \
+  -H "Authorization: Bearer aegis_live_sec_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageUrl": "https://cdn.brand.com/lookbook/FW26_SLIP.jpg",
+    "persona": "editorial_stylist",
+    "targetLanguage": "en-US",
+    "strictOntology": true
+  }'`}
+                </pre>
+              )}
+
+              {activeCodeTab === 'py' && (
+                <pre>
+{`from aegis_ai import AegisClient
+
+client = AegisClient(api_key="aegis_live_sec_...")
+
+# Batch SKU automated enrichment
+enrichment = client.merchandise.enrich(
+    image_url="https://cdn.brand.com/denim/TRUCKER_01.webp",
+    brand_voice="heritage_workwear",
+    output_schema="shopify_json_ld"
+)
+
+print(f"Generated SEO Copy: {enrichment.copy}")
+print(f"Confidence: {enrichment.confidence_score}")`}
+                </pre>
+              )}
+            </div>
+          </div>
+
+          {/* Three Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div className="p-6 rounded-2xl bg-[#1c1c1b] border border-[#30302e]">
+              <div className="w-10 h-10 rounded-xl bg-[#30302e] flex items-center justify-center text-[#d97757] mb-4">
+                <Cpu className="w-5 h-5" />
+              </div>
+              <h3 className="font-claude-serif text-xl text-[#faf9f5] mb-2 font-normal">
+                Multi-Modal Vision Pipeline
+              </h3>
+              <p className="text-sm text-[#b0aea5] leading-relaxed">
+                Decomposes lapels, seams, knit gauges, and fabric drape directly from high-resolution studio assets.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-[#1c1c1b] border border-[#30302e]">
+              <div className="w-10 h-10 rounded-xl bg-[#30302e] flex items-center justify-center text-[#d97757] mb-4">
+                <Layers className="w-5 h-5" />
+              </div>
+              <h3 className="font-claude-serif text-xl text-[#faf9f5] mb-2 font-normal">
+                Dynamic Style Graph
+              </h3>
+              <p className="text-sm text-[#b0aea5] leading-relaxed">
+                Links every SKU to an interoperable vector wardrobe graph for real-time “Complete The Look” cart recommendations.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-[#1c1c1b] border border-[#30302e]">
+              <div className="w-10 h-10 rounded-xl bg-[#30302e] flex items-center justify-center text-[#d97757] mb-4">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="font-claude-serif text-xl text-[#faf9f5] mb-2 font-normal">
+                Enterprise Zero-Retention
+              </h3>
+              <p className="text-sm text-[#b0aea5] leading-relaxed">
+                Zero training on your proprietary unreleased collection photos. Ephemeral inference with complete privacy.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Tier Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800/60">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2 font-mono">Transparent Pricing</div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Predictable Plans for Emerging & Enterprise Brands
-          </h2>
-          <p className="mt-3 text-zinc-400 text-sm sm:text-base">
-            Start in sandbox mode with Claude-powered test credits, scale seamlessly as your catalog expands.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Developer Sandbox */}
-          <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6">
-            <div>
-              <div className="text-sm font-semibold text-zinc-300">Developer Sandbox</div>
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-white">$0</span>
-                <span className="text-xs text-zinc-400">/ free trial</span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-2">
-                Ideal for testing API integrations and evaluating style reasoning on small test batches.
-              </p>
-              <ul className="mt-6 space-y-2.5 text-xs text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Up to 1,000 SKUs enriched</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Claude 3.5 Haiku & Sonnet access</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Community Discord support</span>
-                </li>
-              </ul>
-            </div>
-            <a
-              href="#early-access"
-              className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs text-center transition-all block"
-            >
-              Get Free Sandbox Key
-            </a>
-          </div>
-
-          {/* Growth Tier - Highlighted */}
-          <div className="p-8 rounded-3xl bg-gradient-to-b from-indigo-950/60 to-zinc-900/80 border-2 border-indigo-500/80 relative flex flex-col justify-between space-y-6 shadow-2xl shadow-indigo-500/10">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wider">
-              Most Popular for D2C Brands
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-indigo-300">Growth Brand</div>
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-white">$199</span>
-                <span className="text-xs text-zinc-400">/ month</span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-2">
-                For scaling fashion brands requiring automated editorial copy and localized multi-language tags.
-              </p>
-              <ul className="mt-6 space-y-2.5 text-xs text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>Up to 25,000 SKUs / month</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>Full Claude 3.5 Sonnet Vision Pipeline</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>Custom Brand Tone of Voice fine-tuning</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>Shopify & Headless webhooks</span>
-                </li>
-              </ul>
-            </div>
-            <a
-              href="#early-access"
-              className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs text-center transition-all block shadow-lg shadow-indigo-600/30"
-            >
-              Start Growth Trial
-            </a>
-          </div>
-
-          {/* Enterprise */}
-          <div className="p-8 rounded-3xl bg-zinc-900/40 border border-zinc-800 flex flex-col justify-between space-y-6">
-            <div>
-              <div className="text-sm font-semibold text-zinc-300">Retail Enterprise</div>
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-white">Custom</span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-2">
-                For global retail conglomerates, marketplace operators, and high-volume apparel manufacturers.
-              </p>
-              <ul className="mt-6 space-y-2.5 text-xs text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
-                  <span>Unlimited SKUs & Dedicated Rate Limits</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
-                  <span>Private VPC deployment & Zero Retention</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
-                  <span>Dedicated AI Solutions Engineer & 99.99% SLA</span>
-                </li>
-              </ul>
-            </div>
-            <a
-              href="#early-access"
-              className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs text-center transition-all block"
-            >
-              Talk to Enterprise Sales
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Early Access / Contact Form Section */}
-      <section id="early-access" className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto border-t border-zinc-800/60">
-        <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-600/10 blur-[100px] pointer-events-none" />
-
-          <div className="text-center max-w-xl mx-auto mb-10">
-            <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2 font-mono">Join Private Beta</div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">
-              Request Your Aegis AI API Credentials
+      {/* Chapter 3: Pricing Plans */}
+      <section id="pricing" className="py-24 px-6 bg-[#f5f4ed]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <div className="text-xs font-mono uppercase tracking-wider text-[#c96442] mb-2">Transparent Pricing</div>
+            <h2 className="font-claude-serif text-3xl md:text-5xl text-[#141413] font-normal tracking-tight mb-4">
+              Engineered for Emerging Brands to Retail Conglomerates
             </h2>
-            <p className="mt-2 text-zinc-400 text-xs sm:text-sm">
-              We review and provision sandbox API keys within 24 hours. Connect with our engineering team to trial Claude 3.5 for your apparel catalog.
+            <p className="text-sm md:text-base text-[#5e5d59]">
+              Deploy our pre-trained Claude 3.5 Sonnet fashion models or connect custom fine-tuned brand adapters.
             </p>
           </div>
 
-          {formSubmitted ? (
-            <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-8 text-center space-y-3">
-              <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
-              <h3 className="text-lg font-bold text-white">Application Received Successfully</h3>
-              <p className="text-xs text-zinc-300 max-w-md mx-auto">
-                Thank you for your interest in Aegis AI. An onboarding link and Sandbox API token have been sent to <strong>{formData.email || 'your email'}</strong>.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleFormSubmit} className="space-y-4 max-w-lg mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-zinc-300 block mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Alex Morgan"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-zinc-300 block mb-1.5">Work Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="alex@fashionbrand.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                  />
-                </div>
-              </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            {/* Plan 1 */}
+            <div className="p-8 rounded-2xl bg-[#faf9f5] border border-[#e8e6dc] flex flex-col justify-between">
               <div>
-                <label className="text-xs font-medium text-zinc-300 block mb-1.5">Brand / Company Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Atelier Studio London"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                />
+                <div className="text-xs font-mono text-[#87867f] uppercase mb-2">Developer Tier</div>
+                <h3 className="font-claude-serif text-2xl text-[#141413] mb-1 font-normal">Sandbox</h3>
+                <div className="text-3xl font-claude-serif text-[#141413] my-4">$0 <span className="text-xs font-sans text-[#87867f]">/ month</span></div>
+                <p className="text-xs text-[#5e5d59] mb-6">Designed for testing and prototyping store extensions.</p>
+                <ul className="space-y-3 text-xs text-[#4d4c48]">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 5,000 API requests / month</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Claude 3.5 Haiku reasoning</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Standard JSON-LD attributes</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Community Discord Support</li>
+                </ul>
               </div>
-
-              <div>
-                <label className="text-xs font-medium text-zinc-300 block mb-1.5">Catalog SKU Volume</label>
-                <select
-                  value={formData.skuVolume}
-                  onChange={(e) => setFormData({ ...formData, skuVolume: e.target.value })}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                >
-                  <option>&lt; 1,000 SKUs (Seed / Boutique)</option>
-                  <option>1,000 - 10,000 SKUs (Growth Brand)</option>
-                  <option>10,000 - 100,000 SKUs (Large Retailer)</option>
-                  <option>100,000+ SKUs (Global Enterprise)</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={formLoading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 mt-4"
+              <a
+                href="#access"
+                className="mt-8 block text-center py-2.5 px-4 rounded-xl bg-[#e8e6dc] text-[#4d4c48] text-xs font-medium hover:bg-[#dfdcd0] transition-colors"
               >
-                {formLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Provisioning Sandbox Key...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Submit Request for Sandbox Access</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
-            </form>
-          )}
+                Start in Sandbox
+              </a>
+            </div>
+
+            {/* Plan 2: Featured */}
+            <div className="p-8 rounded-2xl bg-[#ffffff] border-2 border-[#c96442] shadow-md flex flex-col justify-between relative">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#c96442] text-[#faf9f5] text-[11px] font-mono px-3 py-0.5 rounded-full uppercase tracking-wider">
+                Recommended for D2C Brands
+              </div>
+              <div>
+                <div className="text-xs font-mono text-[#c96442] uppercase mb-2">Growth Tier</div>
+                <h3 className="font-claude-serif text-2xl text-[#141413] mb-1 font-normal">Brand Production</h3>
+                <div className="text-3xl font-claude-serif text-[#141413] my-4">$199 <span className="text-xs font-sans text-[#87867f]">/ month</span></div>
+                <p className="text-xs text-[#5e5d59] mb-6">Full multi-modal pipeline for growing e-commerce catalogs.</p>
+                <ul className="space-y-3 text-xs text-[#4d4c48]">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 100,000 API requests / month</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Claude 3.5 Sonnet & Vision</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Dynamic Style Graph Engine</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Custom Brand Voice Persona tuning</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 99.9% Production SLA</li>
+                </ul>
+              </div>
+              <a
+                href="#access"
+                className="mt-8 block text-center py-2.5 px-4 rounded-xl bg-[#c96442] text-[#faf9f5] text-xs font-medium hover:bg-[#b85838] transition-colors"
+              >
+                Apply for Growth Access
+              </a>
+            </div>
+
+            {/* Plan 3 */}
+            <div className="p-8 rounded-2xl bg-[#faf9f5] border border-[#e8e6dc] flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-mono text-[#87867f] uppercase mb-2">Enterprise Tier</div>
+                <h3 className="font-claude-serif text-2xl text-[#141413] mb-1 font-normal">Retail Conglomerate</h3>
+                <div className="text-3xl font-claude-serif text-[#141413] my-4">Custom <span className="text-xs font-sans text-[#87867f]">/ volume</span></div>
+                <p className="text-xs text-[#5e5d59] mb-6">Dedicated inference clusters for global luxury brands.</p>
+                <ul className="space-y-3 text-xs text-[#4d4c48]">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Unlimited SKUs & Catalog Ingestion</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Dedicated Claude VPC Ingress</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Custom Taxonomy & Ontologies</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 24/7 Dedicated Solutions Engineer</li>
+                </ul>
+              </div>
+              <a
+                href="#access"
+                className="mt-8 block text-center py-2.5 px-4 rounded-xl bg-[#e8e6dc] text-[#4d4c48] text-xs font-medium hover:bg-[#dfdcd0] transition-colors"
+              >
+                Contact Sales
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Modern SaaS Footer */}
-      <footer className="border-t border-zinc-800/80 bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8 text-xs text-zinc-400">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">
-              <Sparkles className="w-3.5 h-3.5" />
+      {/* Chapter 4: Early Access Application Form */}
+      <section id="access" className="py-20 px-6 bg-[#faf9f5] border-t border-[#e8e6dc]">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-xs font-mono uppercase tracking-wider text-[#c96442]">Founder & Partner Sandbox</span>
+            <h2 className="font-claude-serif text-3xl md:text-4xl text-[#141413] font-normal tracking-tight mt-1 mb-3">
+              Request Your API Sandbox Key
+            </h2>
+            <p className="text-sm text-[#5e5d59]">
+              We provision developer sandbox keys on a rolling basis. Enter your company credentials below for automated evaluation.
+            </p>
+          </div>
+
+          <div className="bg-[#ffffff] border border-[#e8e6dc] rounded-2xl p-8 shadow-xs">
+            {formSubmitted ? (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 rounded-full bg-[#c96442]/10 text-[#c96442] flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h3 className="font-claude-serif text-2xl text-[#141413] mb-2 font-normal">
+                  Application Received
+                </h3>
+                <p className="text-sm text-[#5e5d59] max-w-md mx-auto mb-6">
+                  Thank you for submitting your brand details. Our engineering team has queued your credentials and will dispatch your sandbox token to <span className="font-mono text-[#141413] font-medium">{email}</span> within 24 hours.
+                </p>
+                <button
+                  onClick={() => setFormSubmitted(false)}
+                  className="text-xs text-[#c96442] hover:underline"
+                >
+                  Submit another inquiry
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleFormSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-medium text-[#4d4c48] mb-1.5">
+                    Work Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="founder@yourbrand.com"
+                    className="w-full text-sm px-4 py-2.5 rounded-xl border border-[#e8e6dc] bg-[#faf9f5] text-[#141413] focus:outline-none focus:border-[#3898ec] transition-colors"
+                  />
+                  <span className="text-[11px] text-[#87867f] mt-1 block">
+                    Use your corporate email domain for priority verification.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#4d4c48] mb-1.5">
+                    Brand / Company Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    placeholder="Acme Apparel Studio"
+                    className="w-full text-sm px-4 py-2.5 rounded-xl border border-[#e8e6dc] bg-[#faf9f5] text-[#141413] focus:outline-none focus:border-[#3898ec] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#4d4c48] mb-1.5">
+                    Current Catalog Volume
+                  </label>
+                  <select
+                    value={skuCount}
+                    onChange={(e) => setSkuCount(e.target.value)}
+                    className="w-full text-sm px-4 py-2.5 rounded-xl border border-[#e8e6dc] bg-[#faf9f5] text-[#141413] focus:outline-none focus:border-[#3898ec] transition-colors"
+                  >
+                    <option>&lt; 1,000 SKUs (Emerging Studio)</option>
+                    <option>1,000 - 10,000 SKUs (Growth Brand)</option>
+                    <option>10,000 - 50,000 SKUs (Retailer)</option>
+                    <option>50,000+ SKUs (Global Enterprise)</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-6 rounded-xl bg-[#c96442] text-[#faf9f5] font-medium text-sm hover:bg-[#b85838] transition-colors shadow-xs flex items-center justify-center gap-2"
+                >
+                  <span>Request API Sandbox Key</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Editorial Footer */}
+      <footer className="py-16 px-6 border-t border-[#e8e6dc] bg-[#f5f4ed] text-xs text-[#5e5d59]">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
+          <div>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-6 h-6 rounded bg-[#141413] text-[#faf9f5] font-claude-serif text-sm flex items-center justify-center font-medium">
+                Æ
+              </div>
+              <span className="font-claude-serif text-base font-medium text-[#141413]">
+                Aegis AI
+              </span>
             </div>
+            <p className="text-xs text-[#87867f] max-w-sm leading-relaxed mb-4">
+              Autonomous multi-modal merchandising and style graph intelligence. Built on Anthropic Claude foundation models.
+            </p>
+            <div className="text-[11px] text-[#87867f]">
+              © 2026 Aegis Collection Technology Ltd. All rights reserved.
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
             <div>
-              <span className="font-bold text-white text-sm">Aegis AI</span>
-              <span className="text-[11px] text-zinc-400 block">Fashion Merchandising & Style Intelligence</span>
+              <div className="font-medium text-[#141413] mb-3">Architecture</div>
+              <ul className="space-y-2">
+                <li><a href="#sandbox" className="hover:text-[#141413] transition-colors">Vision Pipeline</a></li>
+                <li><a href="#api" className="hover:text-[#141413] transition-colors">Style Graph</a></li>
+                <li><a href="#api" className="hover:text-[#141413] transition-colors">REST SDKs</a></li>
+              </ul>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-6">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#demo" className="hover:text-white transition-colors">Demo</a>
-            <a href="#architecture" className="hover:text-white transition-colors">API Specs</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="mailto:founder@aegiscollection.biz.id" className="hover:text-white transition-colors">contact@aegiscollection.biz.id</a>
-          </div>
+            <div>
+              <div className="font-medium text-[#141413] mb-3">Security & Compliance</div>
+              <ul className="space-y-2">
+                <li><span className="text-[#87867f]">Zero Data Retention</span></li>
+                <li><span className="text-[#87867f]">SOC-2 Type II Ingress</span></li>
+                <li><span className="text-[#87867f]">GDPR Compliant</span></li>
+              </ul>
+            </div>
 
-          <div className="text-zinc-400">
-            © 2026 Aegis AI / Aegis Collection Technology. All rights reserved.
+            <div>
+              <div className="font-medium text-[#141413] mb-3">Contact</div>
+              <ul className="space-y-2">
+                <li><span className="font-mono text-[#141413]">founder@aegiscollection.biz.id</span></li>
+                <li><span className="text-[#87867f]">Jakarta • Singapore</span></li>
+              </ul>
+            </div>
           </div>
         </div>
       </footer>
