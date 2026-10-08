@@ -163,10 +163,10 @@ export default function AegisClaudeLanding() {
               </div>
               <div className="flex flex-col">
                 <span className="font-claude-serif text-xl font-medium tracking-tight text-[#141413]">
-                  Aegis AI
+                  Aegis Collection
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-[#87867f] -mt-1 font-mono">
-                  Anthropic Partner
+                  Fashion Intelligence
                 </span>
               </div>
             </a>
@@ -265,7 +265,7 @@ export default function AegisClaudeLanding() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-[#5e5d59] leading-relaxed max-w-2xl mx-auto mb-10 font-normal">
-            Aegis AI couples Anthropic Claude 4.6 Sonnet’s multi-modal visual reasoning with deep fashion ontologies. Transform flat-lay garment photos into high-converting editorial merchandising, dynamic style graphs, and personalized wardrobe recommendations in milliseconds.
+            Aegis Collection couples Anthropic Claude 4.6 Sonnet’s multi-modal visual reasoning with deep fashion ontologies. Transform flat-lay garment photos into high-converting editorial merchandising, dynamic style graphs, and personalized wardrobe recommendations in milliseconds.
           </p>
 
           {/* Action CTAs */}
@@ -538,7 +538,7 @@ export default function AegisClaudeLanding() {
               Built for High-Volume Catalog Pipelines
             </h2>
             <p className="text-base md:text-lg text-[#b0aea5] leading-relaxed">
-              Plug Aegis AI directly into your Shopify Plus, WooCommerce, or custom ERP. Dispatch high-res product shoots and receive structured JSON catalog enrichments with strict type contracts.
+              Plug Aegis Collection directly into your Shopify Plus, WooCommerce, or custom ERP. Dispatch high-res product shoots and receive structured JSON catalog enrichments with strict type contracts.
             </p>
           </div>
 
@@ -876,7 +876,7 @@ print(f"Confidence: {enrichment.confidence_score}")`}
                 Æ
               </div>
               <span className="font-claude-serif text-base font-medium text-[#141413]">
-                Aegis AI
+                Aegis Collection
               </span>
             </div>
             <p className="text-xs text-[#87867f] max-w-sm leading-relaxed mb-4">
