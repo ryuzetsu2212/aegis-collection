@@ -118,6 +118,8 @@ export function Navbar({ initialUser }: { initialUser?: AuthUser | null }) {
   const isCourier = user?.role === 'courier'
   const canAccessCourier = isCourier
 
+  if (pathname === '/') return null
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-zinc-200 shadow-xs print:hidden">
       {/* Top Banner Promo Dinamis dari Admin Banner */}

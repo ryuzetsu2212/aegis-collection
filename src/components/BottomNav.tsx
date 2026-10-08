@@ -39,6 +39,8 @@ export function BottomNav({ initialUser }: { initialUser?: AuthUser | null }) {
   }, [])
 
   const isCourier = user?.role === 'courier'
+
+  if (pathname === '/') return null
   const isAdmin = user?.role === 'admin'
   const isStaff = user?.role === 'staff'
 

@@ -1,7 +1,13 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { MapPin, Phone, Clock, Truck, ShieldCheck, CreditCard, Heart, ShoppingBag } from 'lucide-react'
 
 export function Footer() {
+  const pathname = usePathname()
+  if (pathname === '/') return null
+
   return (
     <footer className="bg-zinc-900 text-zinc-300 border-t border-zinc-800 mt-auto print:hidden">
       {/* Feature Highlights Bar */}
