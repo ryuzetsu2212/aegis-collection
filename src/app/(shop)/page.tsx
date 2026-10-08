@@ -145,7 +145,7 @@ export default function AegisClaudeLanding() {
     <div className="w-full bg-[#f5f4ed] text-[#141413] min-h-screen selection:bg-[#c96442]/20 selection:text-[#c96442]">
       {/* Top Header / Navigation */}
       <header className="sticky top-0 z-50 w-full border-b border-[#e8e6dc] bg-[#f5f4ed]/95 backdrop-blur-md transition-all">
-        <div className="max-w-6xl mx-auto px-6 h-18 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <a
               href="#"
@@ -161,11 +161,11 @@ export default function AegisClaudeLanding() {
               <div className="w-8 h-8 rounded-lg bg-[#141413] flex items-center justify-center text-[#faf9f5] font-claude-serif text-lg font-medium shadow-sm group-hover:bg-[#c96442] transition-colors">
                 Æ
               </div>
-              <div className="flex flex-col">
-                <span className="font-claude-serif text-xl font-medium tracking-tight text-[#141413]">
+              <div className="flex flex-col justify-center">
+                <span className="font-claude-serif text-lg sm:text-xl font-medium tracking-tight text-[#141413] leading-tight">
                   Aegis Collection
                 </span>
-                <span className="text-[10px] uppercase tracking-widest text-[#87867f] -mt-1 font-mono">
+                <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-[#87867f] font-mono mt-0.5 leading-tight">
                   Fashion Intelligence
                 </span>
               </div>
