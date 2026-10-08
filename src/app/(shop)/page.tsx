@@ -160,7 +160,7 @@ export default function AegisClaudeLanding() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal text-[#5e5d59]">
-            <a href="#about" className="hover:text-[#141413] transition-colors">Architecture</a>
+            <a href="#architecture" className="hover:text-[#141413] transition-colors">Architecture</a>
             <a href="#sandbox" className="hover:text-[#141413] transition-colors">Live Sandbox</a>
             <a href="#api" className="hover:text-[#141413] transition-colors">Developer Specs</a>
             <a href="#pricing" className="hover:text-[#141413] transition-colors">Pricing</a>
@@ -461,7 +461,7 @@ export default function AegisClaudeLanding() {
       </section>
 
       {/* Chapter 2: Technical Architecture (Dark Section ala Anthropic Near Black) */}
-      <section id="api" className="py-24 px-6 bg-[#141413] text-[#faf9f5]">
+      <section id="architecture" className="py-24 px-6 bg-[#141413] text-[#faf9f5]">
         <div className="max-w-6xl mx-auto">
           <div className="max-w-3xl mb-14">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#30302e] border border-[#4d4c48] text-xs text-[#d97757] font-mono mb-4">
@@ -477,7 +477,7 @@ export default function AegisClaudeLanding() {
           </div>
 
           {/* Code Showcase Terminal */}
-          <div className="bg-[#1c1c1b] border border-[#30302e] rounded-2xl overflow-hidden shadow-2xl">
+          <div id="api" className="bg-[#1c1c1b] border border-[#30302e] rounded-2xl overflow-hidden shadow-2xl scroll-mt-24">
             {/* Terminal Tab Bar */}
             <div className="px-4 py-3 bg-[#171716] border-b border-[#30302e] flex items-center justify-between">
               <div className="flex items-center gap-2">
