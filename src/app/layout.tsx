@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Aegis AI | Autonomous Fashion Intelligence & Merchandising Engine",
   description:
-    "Enterprise multi-modal AI infrastructure for apparel brands and fashion retail. Powered by Anthropic Claude 3.5 Sonnet and Claude Vision.",
+    "Enterprise multi-modal AI infrastructure for apparel brands and fashion retail. Powered by Anthropic Claude 4.6 Sonnet and Claude Vision.",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",

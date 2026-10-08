@@ -189,7 +189,7 @@ export default function AegisClaudeLanding() {
           {/* Overline Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6dc] bg-[#faf9f5] text-xs text-[#5e5d59] mb-8 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#c96442] animate-pulse" />
-            <span className="font-mono text-[11px] text-[#4d4c48]">Powered by Claude 3.5 Sonnet & Claude Vision</span>
+            <span className="font-mono text-[11px] text-[#4d4c48]">Powered by Claude 4.6 Sonnet & Claude Vision</span>
           </div>
 
           {/* Display Headline */}
@@ -199,7 +199,7 @@ export default function AegisClaudeLanding() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-[#5e5d59] leading-relaxed max-w-2xl mx-auto mb-10 font-normal">
-            Aegis AI couples Anthropic Claude 3.5 Sonnet’s multi-modal visual reasoning with deep fashion ontologies. Transform flat-lay garment photos into high-converting editorial merchandising, dynamic style graphs, and personalized wardrobe recommendations in milliseconds.
+            Aegis AI couples Anthropic Claude 4.6 Sonnet’s multi-modal visual reasoning with deep fashion ontologies. Transform flat-lay garment photos into high-converting editorial merchandising, dynamic style graphs, and personalized wardrobe recommendations in milliseconds.
           </p>
 
           {/* Action CTAs */}
@@ -252,7 +252,7 @@ export default function AegisClaudeLanding() {
               </h2>
             </div>
             <p className="text-sm text-[#5e5d59] max-w-md">
-              Select an apparel garment below to inspect real-time Claude 3.5 Sonnet multi-modal extraction, style ontology tagging, and automated editorial synthesis.
+              Select an apparel garment below to inspect real-time Claude 4.6 Sonnet multi-modal extraction, style ontology tagging, and automated editorial synthesis.
             </p>
           </div>
 
@@ -319,7 +319,7 @@ export default function AegisClaudeLanding() {
                   <span className="text-xs text-[#87867f]">•</span>
                   <span className="text-xs text-[#5e5d59] font-medium flex items-center gap-1">
                     <Sparkles className="w-3.5 h-3.5 text-[#c96442]" />
-                    Claude 3.5 Sonnet Vision
+                    Claude 4.6 Sonnet Vision
                   </span>
                 </div>
 
@@ -364,7 +364,7 @@ export default function AegisClaudeLanding() {
                   <div className="py-20 flex flex-col items-center justify-center text-center">
                     <div className="w-8 h-8 rounded-full border-2 border-[#c96442] border-t-transparent animate-spin mb-3" />
                     <div className="text-sm font-medium text-[#141413]">Decomposing Garment Imagery...</div>
-                    <div className="text-xs text-[#87867f] mt-1 font-mono">Passing tokens to Claude 3.5 Sonnet Vision API</div>
+                    <div className="text-xs text-[#87867f] mt-1 font-mono">Passing tokens to Claude 4.6 Sonnet Vision API</div>
                   </div>
                 ) : (
                   <div>
@@ -529,7 +529,7 @@ export default function AegisClaudeLanding() {
 
 const aegis = new AegisClient({
   apiKey: process.env.AEGIS_API_KEY, // Provisioned via Sandbox
-  engine: 'claude-3-5-sonnet-20241022',
+  engine: 'claude-4-6-sonnet',
 });
 
 // Process apparel photo shoot with multi-modal reasoning
@@ -629,7 +629,7 @@ print(f"Confidence: {enrichment.confidence_score}")`}
               Engineered for Emerging Brands to Retail Conglomerates
             </h2>
             <p className="text-sm md:text-base text-[#5e5d59]">
-              Deploy our pre-trained Claude 3.5 Sonnet fashion models or connect custom fine-tuned brand adapters.
+              Deploy our pre-trained Claude 4.6 Sonnet fashion models or connect custom fine-tuned brand adapters.
             </p>
           </div>
 
@@ -643,7 +643,7 @@ print(f"Confidence: {enrichment.confidence_score}")`}
                 <p className="text-xs text-[#5e5d59] mb-6">Designed for testing and prototyping store extensions.</p>
                 <ul className="space-y-3 text-xs text-[#4d4c48]">
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 5,000 API requests / month</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Claude 3.5 Haiku reasoning</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Claude 4.6 Haiku reasoning</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Standard JSON-LD attributes</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Community Discord Support</li>
                 </ul>
@@ -668,7 +668,7 @@ print(f"Confidence: {enrichment.confidence_score}")`}
                 <p className="text-xs text-[#5e5d59] mb-6">Full multi-modal pipeline for growing e-commerce catalogs.</p>
                 <ul className="space-y-3 text-xs text-[#4d4c48]">
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 100,000 API requests / month</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Claude 3.5 Sonnet & Vision</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Claude 4.6 Sonnet & Vision</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Dynamic Style Graph Engine</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> Custom Brand Voice Persona tuning</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#c96442]" /> 99.9% Production SLA</li>
