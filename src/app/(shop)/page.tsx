@@ -24,7 +24,9 @@ import {
   Compass,
   FileText,
   SlidersHorizontal,
-  BookmarkCheck
+  BookmarkCheck,
+  Menu,
+  X
 } from 'lucide-react'
 
 // Garment Presets for Sandbox
@@ -113,6 +115,7 @@ const PRESETS = [
 ]
 
 export default function AegisClaudeLanding() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activePreset, setActivePreset] = useState(PRESETS[0])
   const [activeMode, setActiveMode] = useState<'copy' | 'style' | 'specs'>('copy')
   const [isSimulating, setIsSimulating] = useState(false)
@@ -141,10 +144,20 @@ export default function AegisClaudeLanding() {
   return (
     <div className="w-full bg-[#f5f4ed] text-[#141413] min-h-screen selection:bg-[#c96442]/20 selection:text-[#c96442]">
       {/* Top Header / Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-[#e8e6dc] bg-[#f5f4ed]/90 backdrop-blur-md transition-all">
+      <header className="sticky top-0 z-50 w-full border-b border-[#e8e6dc] bg-[#f5f4ed]/95 backdrop-blur-md transition-all">
         <div className="max-w-6xl mx-auto px-6 h-18 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+                if (window.location.hash) {
+                  history.pushState(null, '', window.location.pathname)
+                }
+              }}
+              className="flex items-center gap-2.5 group cursor-pointer"
+            >
               <div className="w-8 h-8 rounded-lg bg-[#141413] flex items-center justify-center text-[#faf9f5] font-claude-serif text-lg font-medium shadow-sm group-hover:bg-[#c96442] transition-colors">
                 Æ
               </div>
@@ -156,7 +169,7 @@ export default function AegisClaudeLanding() {
                   Anthropic Partner
                 </span>
               </div>
-            </Link>
+            </a>
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal text-[#5e5d59]">
@@ -166,7 +179,7 @@ export default function AegisClaudeLanding() {
             <a href="#pricing" className="hover:text-[#141413] transition-colors">Pricing</a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <a
               href="#sandbox"
               className="text-sm font-medium text-[#4d4c48] px-3.5 py-2 rounded-lg hover:text-[#141413] transition-colors hidden sm:inline-block"
@@ -175,12 +188,65 @@ export default function AegisClaudeLanding() {
             </a>
             <a
               href="#access"
-              className="text-sm font-medium bg-[#c96442] text-[#faf9f5] px-4 py-2 rounded-lg hover:bg-[#b85838] transition-colors shadow-xs"
+              className="text-xs sm:text-sm font-medium bg-[#c96442] text-[#faf9f5] px-3 sm:px-4 py-2 rounded-lg hover:bg-[#b85838] transition-colors shadow-xs whitespace-nowrap"
             >
               Request API Key
             </a>
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-[#141413] hover:bg-[#eae8dd] transition-colors focus:outline-none"
+              aria-label="Toggle navigation menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu (Garis 3) */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-[#e8e6dc] bg-[#f5f4ed] px-6 py-4 shadow-lg animate-in fade-in duration-200">
+            <nav className="flex flex-col space-y-3 text-[15px] font-normal text-[#5e5d59]">
+              <a
+                href="#architecture"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#141413] transition-colors"
+              >
+                Architecture
+              </a>
+              <a
+                href="#sandbox"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#141413] transition-colors"
+              >
+                Live Sandbox
+              </a>
+              <a
+                href="#api"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#141413] transition-colors"
+              >
+                Developer Specs
+              </a>
+              <a
+                href="#pricing"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#141413] transition-colors"
+              >
+                Pricing
+              </a>
+              <div className="pt-2 border-t border-[#e8e6dc] flex flex-col gap-2">
+                <a
+                  href="#access"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full text-center text-sm font-medium bg-[#c96442] text-[#faf9f5] py-2.5 rounded-lg hover:bg-[#b85838] transition-colors"
+                >
+                  Request Sandbox API Key
+                </a>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -479,7 +545,7 @@ export default function AegisClaudeLanding() {
           {/* Code Showcase Terminal */}
           <div id="api" className="bg-[#1c1c1b] border border-[#30302e] rounded-2xl overflow-hidden shadow-2xl scroll-mt-24">
             {/* Terminal Tab Bar */}
-            <div className="px-4 py-3 bg-[#171716] border-b border-[#30302e] flex items-center justify-between">
+            <div className="px-4 py-3 bg-[#171716] border-b border-[#30302e] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-[#3d3d3a]" />
                 <span className="w-3 h-3 rounded-full bg-[#3d3d3a]" />
@@ -487,7 +553,7 @@ export default function AegisClaudeLanding() {
                 <span className="ml-2 text-xs font-mono text-[#87867f]">api.aegiscollection.biz.id</span>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-1 sm:pb-0">
                 <button
                   onClick={() => setActiveCodeTab('ts')}
                   className={`text-xs px-3 py-1 rounded font-mono transition-colors ${
