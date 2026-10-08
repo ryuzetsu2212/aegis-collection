@@ -173,8 +173,8 @@ export default function AegisClaudeLanding() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal text-[#5e5d59]">
-            <a href="#architecture" className="hover:text-[#141413] transition-colors">Architecture</a>
             <a href="#sandbox" className="hover:text-[#141413] transition-colors">Live Sandbox</a>
+            <a href="#architecture" className="hover:text-[#141413] transition-colors">Architecture</a>
             <a href="#api" className="hover:text-[#141413] transition-colors">Developer Specs</a>
             <a href="#pricing" className="hover:text-[#141413] transition-colors">Pricing</a>
           </nav>
@@ -208,18 +208,18 @@ export default function AegisClaudeLanding() {
           <div className="md:hidden border-t border-[#e8e6dc] bg-[#f5f4ed] px-6 py-4 shadow-lg animate-in fade-in duration-200">
             <nav className="flex flex-col space-y-3 text-[15px] font-normal text-[#5e5d59]">
               <a
-                href="#architecture"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="py-1.5 hover:text-[#141413] transition-colors"
-              >
-                Architecture
-              </a>
-              <a
                 href="#sandbox"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="py-1.5 hover:text-[#141413] transition-colors"
               >
                 Live Sandbox
+              </a>
+              <a
+                href="#architecture"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#141413] transition-colors"
+              >
+                Architecture
               </a>
               <a
                 href="#api"
