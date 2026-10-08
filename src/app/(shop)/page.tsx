@@ -255,7 +255,7 @@ export default function AegisClaudeLanding() {
           {/* Overline Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6dc] bg-[#faf9f5] text-xs text-[#5e5d59] mb-8 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[#c96442] animate-pulse" />
-            <span className="font-mono text-[11px] text-[#4d4c48]">Powered by Claude 4.6 Sonnet & Claude Vision</span>
+            <span className="font-mono text-[11px] text-[#4d4c48]">Powered by Claude 4.6 Sonnet</span>
           </div>
 
           {/* Display Headline */}
